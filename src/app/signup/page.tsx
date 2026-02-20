@@ -35,32 +35,33 @@ import {
   Lightbulb,
   Music,
   Video,
-  Scale
+  Scale,
+  Camera
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
 const INTEREST_CATEGORIES = [
-  { id: 'hackathons', label: 'Hackathons', icon: <Rocket className="w-5 h-5" />, image: 'https://picsum.photos/seed/hack/400/300' },
-  { id: 'ai-ml', label: 'AI / ML', icon: <Brain className="w-5 h-5" />, image: 'https://picsum.photos/seed/ai/400/400' },
-  { id: 'web-dev', label: 'Web Development', icon: <Code className="w-5 h-5" />, image: 'https://picsum.photos/seed/web/400/500' },
-  { id: 'app-dev', label: 'App Development', icon: <Smartphone className="w-5 h-5" />, image: 'https://picsum.photos/seed/app/400/350' },
-  { id: 'ui-ux', label: 'UI/UX Design', icon: <Palette className="w-5 h-5" />, image: 'https://picsum.photos/seed/design/400/450' },
-  { id: 'startups', icon: <Zap className="w-5 h-5" />, label: 'Startups', image: 'https://picsum.photos/seed/startup/400/300' },
-  { id: 'robotics', label: 'Robotics', icon: <Cpu className="w-5 h-5" />, image: 'https://picsum.photos/seed/robot/400/400' },
-  { id: 'blockchain', label: 'Blockchain', icon: <Database className="w-5 h-5" />, image: 'https://picsum.photos/seed/block/400/310' },
-  { id: 'data-science', label: 'Data Science', icon: <BarChart3 className="w-5 h-5" />, image: 'https://picsum.photos/seed/data/400/320' },
-  { id: 'open-source', label: 'Open Source', icon: <Globe className="w-5 h-5" />, image: 'https://picsum.photos/seed/open/400/330' },
-  { id: 'social-impact', label: 'Social Impact', icon: <Heart className="w-5 h-5" />, image: 'https://picsum.photos/seed/social/400/340' },
-  { id: 'fintech', label: 'FinTech', icon: <Briefcase className="w-5 h-5" />, image: 'https://picsum.photos/seed/fin/400/350' },
-  { id: 'cybersecurity', label: 'Cybersecurity', icon: <Shield className="w-5 h-5" />, image: 'https://picsum.photos/seed/secure/400/360' },
-  { id: 'sustainability', label: 'Sustainability', icon: <Leaf className="w-5 h-5" />, image: 'https://picsum.photos/seed/leaf/400/370' },
-  { id: 'bio-tech', label: 'BioTech', icon: <Microscope className="w-5 h-5" />, image: 'https://picsum.photos/seed/bio/400/380' },
-  { id: 'marketing', label: 'Marketing', icon: <Megaphone className="w-5 h-5" />, image: 'https://picsum.photos/seed/market/400/390' },
-  { id: 'creative-arts', label: 'Creative Arts', icon: <Music className="w-5 h-5" />, image: 'https://picsum.photos/seed/art/400/400' },
-  { id: 'film-video', label: 'Film & Video', icon: <Video className="w-5 h-5" />, image: 'https://picsum.photos/seed/video/400/410' },
-  { id: 'legal-tech', label: 'Legal Tech', icon: <Scale className="w-5 h-5" />, image: 'https://picsum.photos/seed/law/400/420' },
-  { id: 'innovation', label: 'Innovation', icon: <Lightbulb className="w-5 h-5" />, image: 'https://picsum.photos/seed/light/400/430' },
+  { id: 'hackathons', label: 'Hackathons', icon: <Rocket className="w-5 h-5" />, seed: 'coding' },
+  { id: 'ai-ml', label: 'AI / ML', icon: <Brain className="w-5 h-5" />, seed: 'robotics' },
+  { id: 'web-dev', label: 'Web Development', icon: <Code className="w-5 h-5" />, seed: 'web' },
+  { id: 'app-dev', label: 'App Development', icon: <Smartphone className="w-5 h-5" />, seed: 'mobile' },
+  { id: 'ui-ux', label: 'UI/UX Design', icon: <Palette className="w-5 h-5" />, seed: 'design' },
+  { id: 'startups', label: 'Startups', icon: <Zap className="w-5 h-5" />, seed: 'startup' },
+  { id: 'robotics', label: 'Robotics', icon: <Cpu className="w-5 h-5" />, seed: 'machine' },
+  { id: 'blockchain', label: 'Blockchain', icon: <Database className="w-5 h-5" />, seed: 'crypto' },
+  { id: 'data-science', label: 'Data Science', icon: <BarChart3 className="w-5 h-5" />, seed: 'analytics' },
+  { id: 'open-source', label: 'Open Source', icon: <Globe className="w-5 h-5" />, seed: 'earth' },
+  { id: 'social-impact', label: 'Social Impact', icon: <Heart className="w-5 h-5" />, seed: 'community' },
+  { id: 'fintech', label: 'FinTech', icon: <Briefcase className="w-5 h-5" />, seed: 'finance' },
+  { id: 'cybersecurity', label: 'Cybersecurity', icon: <Shield className="w-5 h-5" />, seed: 'secure' },
+  { id: 'sustainability', label: 'Sustainability', icon: <Leaf className="w-5 h-5" />, seed: 'nature' },
+  { id: 'bio-tech', label: 'BioTech', icon: <Microscope className="w-5 h-5" />, seed: 'science' },
+  { id: 'marketing', label: 'Marketing', icon: <Megaphone className="w-5 h-5" />, seed: 'loud' },
+  { id: 'creative-arts', label: 'Creative Arts', icon: <Music className="w-5 h-5" />, seed: 'music' },
+  { id: 'film-video', label: 'Film & Video', icon: <Video className="w-5 h-5" />, seed: 'camera' },
+  { id: 'legal-tech', label: 'Legal Tech', icon: <Scale className="w-5 h-5" />, seed: 'law' },
+  { id: 'innovation', label: 'Innovation', icon: <Lightbulb className="w-5 h-5" />, seed: 'bulb' },
 ];
 
 const TECH_SKILLS = [
@@ -108,7 +109,8 @@ export default function OnboardingFlow() {
       bio: 'Passionate developer building tools for student collaboration.',
       skills,
       interests,
-      points: 100
+      points: 100,
+      rating: 4.5
     };
     
     localStorage.setItem('cc_current_user', JSON.stringify(userData));
@@ -129,7 +131,7 @@ export default function OnboardingFlow() {
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold font-headline">Select Your Domains</h3>
+              <h3 className="text-3xl font-bold font-headline">Select Your Domains</h3>
               <p className="text-sm text-muted-foreground">Choose the badges that best represent your core strengths.</p>
             </div>
             <div className="space-y-4">
@@ -143,18 +145,18 @@ export default function OnboardingFlow() {
                     variant={skills.includes(skill) ? "default" : "outline"}
                     onClick={() => toggleSkill(skill)}
                     className={cn(
-                      "px-4 py-2 cursor-pointer transition-all border-primary/30 rounded-xl",
-                      skills.includes(skill) ? "bg-primary text-white scale-105" : "hover:bg-primary/10"
+                      "px-5 py-2.5 cursor-pointer transition-all border-primary/20 rounded-xl font-bold",
+                      skills.includes(skill) ? "bg-primary text-white scale-105 shadow-lg shadow-primary/20" : "hover:bg-primary/5 hover:border-primary/40"
                     )}
                   >
-                    {skill} {skills.includes(skill) ? <X className="w-3 h-3 ml-1" /> : <Plus className="w-3 h-3 ml-1" />}
+                    {skill} {skills.includes(skill) ? <X className="w-3.5 h-3.5 ml-1.5" /> : <Plus className="w-3.5 h-3.5 ml-1.5" />}
                   </Badge>
                 ))}
               </div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-4">
               <Label className="text-lg font-bold flex items-center gap-2">
-                <Palette className="w-5 h-5 text-creative" /> Creative & Professional
+                <Palette className="w-5 h-5 text-primary/70" /> Creative & Professional
               </Label>
               <div className="flex flex-wrap gap-2">
                 {NON_TECH_SKILLS.map(skill => (
@@ -163,11 +165,11 @@ export default function OnboardingFlow() {
                     variant={skills.includes(skill) ? "default" : "outline"}
                     onClick={() => toggleSkill(skill)}
                     className={cn(
-                      "px-4 py-2 cursor-pointer transition-all border-creative/30 rounded-xl",
-                      skills.includes(skill) ? "bg-creative text-white scale-105" : "hover:bg-creative/10 text-creative"
+                      "px-5 py-2.5 cursor-pointer transition-all border-primary/20 rounded-xl font-bold",
+                      skills.includes(skill) ? "bg-primary text-white scale-105 shadow-lg shadow-primary/20" : "hover:bg-primary/5 hover:border-primary/40"
                     )}
                   >
-                    {skill} {skills.includes(skill) ? <X className="w-3 h-3 ml-1" /> : <Plus className="w-3 h-3 ml-1" />}
+                    {skill} {skills.includes(skill) ? <X className="w-3.5 h-3.5 ml-1.5" /> : <Plus className="w-3.5 h-3.5 ml-1.5" />}
                   </Badge>
                 ))}
               </div>
@@ -176,45 +178,57 @@ export default function OnboardingFlow() {
         );
       case 2:
         return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold font-headline">Profile Identity</h3>
-              <p className="text-sm text-muted-foreground">Tell the community who you are.</p>
+              <h3 className="text-3xl font-bold font-headline">Profile Identity</h3>
+              <p className="text-sm text-muted-foreground">How should the community address you?</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <Label>Full Name</Label>
-                <Input placeholder="John Doe" defaultValue="John Doe" />
+                <Label className="font-bold">Full Name</Label>
+                <Input placeholder="John Doe" defaultValue="John Doe" className="h-12 rounded-2xl" />
               </div>
               <div className="space-y-2">
-                <Label>College Email</Label>
-                <Input placeholder="john@university.edu" type="email" defaultValue="john@university.edu" />
+                <Label className="font-bold">College Email</Label>
+                <Input placeholder="john@university.edu" type="email" defaultValue="john@university.edu" className="h-12 rounded-2xl" />
               </div>
             </div>
-            <div className="p-5 bg-muted/20 rounded-2xl border space-y-5">
-              <div className="flex items-center gap-2 font-bold text-sm">
-                <GraduationCap className="w-5 h-5 text-primary" />
-                <span>Education Background</span>
+            <div className="p-8 bg-muted/20 rounded-[2rem] border-2 border-primary/5 space-y-6">
+              <div className="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-primary">
+                <GraduationCap className="w-5 h-5" />
+                <span>Academic Verification</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input placeholder="University" defaultValue="Stanford University" />
-                <Input placeholder="Major" defaultValue="Computer Science" />
-                <Input placeholder="Degree" defaultValue="Bachelor of Science" />
-                <Input placeholder="Graduation Year" defaultValue="2026" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">University</Label>
+                  <Input placeholder="University Name" defaultValue="Stanford University" className="h-11 rounded-xl" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Major</Label>
+                  <Input placeholder="e.g. Computer Science" defaultValue="Computer Science" className="h-11 rounded-xl" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Degree Level</Label>
+                  <Input placeholder="e.g. Bachelor of Science" defaultValue="Bachelor of Science" className="h-11 rounded-xl" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Graduation Year</Label>
+                  <Input placeholder="e.g. 2026" defaultValue="2026" className="h-11 rounded-xl" />
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Bio</Label>
-              <Textarea placeholder="What drives you?" className="resize-none h-28" defaultValue="Passionate developer building tools for student collaboration." />
+            <div className="space-y-3">
+              <Label className="font-bold">Professional Bio</Label>
+              <Textarea placeholder="What drives you? Share your vision..." className="resize-none h-32 rounded-3xl p-4" defaultValue="Passionate developer building tools for student collaboration." />
             </div>
           </div>
         );
       case 3:
         return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold font-headline">Passion Board</h3>
-              <p className="text-sm text-muted-foreground">Select your interests and vision areas.</p>
+              <h3 className="text-3xl font-bold font-headline">Passion Board</h3>
+              <p className="text-sm text-muted-foreground">Choose the fields you want to disrupt.</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {INTEREST_CATEGORIES.map((cat) => (
@@ -222,17 +236,22 @@ export default function OnboardingFlow() {
                   key={cat.id} 
                   onClick={() => toggleInterest(cat.id)}
                   className={cn(
-                    "relative rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 border-2 aspect-square",
-                    interests.includes(cat.id) ? "border-primary shadow-xl scale-[0.98]" : "border-transparent"
+                    "relative rounded-[2rem] overflow-hidden cursor-pointer group transition-all duration-500 border-4 aspect-square shadow-soft hover:-translate-y-1",
+                    interests.includes(cat.id) ? "border-primary scale-[0.98] shadow-xl shadow-primary/10" : "border-transparent"
                   )}
                 >
-                  <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-2 text-center text-white font-bold text-xs gap-2">
-                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <img src={`https://picsum.photos/seed/${cat.seed}/400/400`} alt={cat.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center p-4 text-center text-white font-bold text-xs gap-3 backdrop-blur-[1px] group-hover:bg-black/40 transition-colors">
+                    <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md shadow-lg group-hover:scale-110 transition-transform">
                       {cat.icon}
                     </div>
-                    {cat.label}
+                    <span className="leading-tight">{cat.label}</span>
                   </div>
+                  {interests.includes(cat.id) && (
+                    <div className="absolute top-2 right-2 bg-primary text-white p-1 rounded-full shadow-lg">
+                      <Check className="w-4 h-4" />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -240,12 +259,23 @@ export default function OnboardingFlow() {
         );
       case 4:
         return (
-          <div className="space-y-8 animate-in fade-in duration-300 text-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trophy className="w-10 h-10 text-primary" />
+          <div className="space-y-8 animate-in fade-in duration-500 text-center py-10">
+            <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <Trophy className="w-12 h-12 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold font-headline">Verification Complete</h3>
-            <p className="text-muted-foreground">You've earned 100 Collab Points for joining! Ready to launch?</p>
+            <div className="space-y-2">
+              <h3 className="text-4xl font-bold font-headline">Genesis Complete</h3>
+              <p className="text-muted-foreground text-lg">You've earned 100 Collab Points for joining the ecosystem.</p>
+            </div>
+            <div className="flex flex-col items-center gap-4 bg-muted/30 p-8 rounded-[3rem] border border-primary/5">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">Initial Peer Rating</p>
+              <div className="flex gap-1.5">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <Star key={i} className={cn("w-6 h-6", i <= 4 ? "text-yellow-500 fill-yellow-500" : i === 5 ? "text-yellow-500/50 fill-yellow-500/20" : "text-muted")} />
+                ))}
+              </div>
+              <p className="text-xs font-bold text-primary">Baseline: 4.5 Stars</p>
+            </div>
           </div>
         );
       default:
@@ -255,31 +285,41 @@ export default function OnboardingFlow() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 py-12">
-      <div className="w-full max-w-5xl space-y-8">
-        <div className="text-center">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
-              <Logo className="text-white w-6 h-6" />
+      <div className="w-full max-w-6xl space-y-10">
+        <div className="text-center space-y-6">
+          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-xl shadow-primary/30 group-hover:scale-110 transition-transform duration-500">
+              <Logo className="text-white w-7 h-7" />
             </div>
-            <span className="font-headline font-bold text-2xl tracking-tighter">CampusConnect</span>
+            <span className="font-headline font-bold text-3xl tracking-tighter">CampusConnect</span>
           </Link>
-          <Progress value={(step / 4) * 100} className="h-2 max-w-md mx-auto rounded-full" />
+          <div className="max-w-md mx-auto space-y-2">
+            <Progress value={(step / 4) * 100} className="h-2.5 rounded-full bg-primary/10" />
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground px-1">
+              <span>Origin</span>
+              <span>Identity</span>
+              <span>Vision</span>
+              <span>Launch</span>
+            </div>
+          </div>
         </div>
 
-        <Card className="border-none shadow-soft overflow-hidden bg-white">
-          <CardHeader className="bg-white border-b p-8">
-            <CardTitle className="text-3xl font-bold font-headline">Onboarding</CardTitle>
+        <Card className="border-none shadow-soft overflow-hidden bg-white rounded-[3rem]">
+          <CardHeader className="bg-white border-b px-10 py-10">
+            <CardTitle className="text-4xl font-black font-headline text-primary">Onboarding Flow</CardTitle>
           </CardHeader>
-          <CardContent className="min-h-[400px] p-8">
+          <CardContent className="min-h-[500px] p-10">
             {renderStep()}
           </CardContent>
-          <CardFooter className="flex justify-between border-t p-8 bg-muted/5">
-            {step > 1 && <Button variant="outline" onClick={handleBack} disabled={isSubmitting}>Back</Button>}
+          <CardFooter className="flex justify-between border-t p-10 bg-muted/10">
+            {step > 1 ? (
+              <Button variant="ghost" onClick={handleBack} disabled={isSubmitting} className="h-12 px-8 rounded-2xl font-bold">Back</Button>
+            ) : <div />}
             {step < 4 ? (
-              <Button onClick={handleNext} className="ml-auto">Continue</Button>
+              <Button onClick={handleNext} className="ml-auto h-12 px-10 rounded-2xl font-bold bg-primary text-white shadow-lg shadow-primary/20">Continue</Button>
             ) : (
-              <Button onClick={onFinalSubmit} disabled={isSubmitting} className="ml-auto bg-primary text-white">
-                {isSubmitting ? 'Finalizing...' : 'Launch Dashboard'}
+              <Button onClick={onFinalSubmit} disabled={isSubmitting} className="ml-auto h-14 px-12 rounded-2xl font-bold bg-primary text-white shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all">
+                {isSubmitting ? 'Finalizing Genesis...' : 'Launch Dashboard'}
               </Button>
             )}
           </CardFooter>

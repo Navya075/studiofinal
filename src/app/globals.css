@@ -4,15 +4,15 @@
 
 @layer base {
   :root {
-    --background: 40 30% 98%; /* Warm Cream */
-    --foreground: 265 30% 15%; /* Deep Purple-Grey Text */
+    --background: 40 30% 98%; /* Soft Cream */
+    --foreground: 265 30% 12%; /* Deep Purple-Grey */
     --card: 0 0% 100%;
-    --card-foreground: 265 30% 15%;
+    --card-foreground: 265 30% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 265 30% 15%;
+    --popover-foreground: 265 30% 12%;
     --primary: 265 60% 40%; /* Royal Purple */
     --primary-foreground: 40 30% 98%;
-    --secondary: 265 20% 94%; /* Soft Lavender */
+    --secondary: 265 20% 94%; /* Light Lavender */
     --secondary-foreground: 265 50% 20%;
     --muted: 265 10% 96%;
     --muted-foreground: 265 15% 45%;
@@ -23,17 +23,17 @@
     --border: 265 15% 88%;
     --input: 265 15% 88%;
     --ring: 265 60% 40%;
-    --radius: 1.25rem;
+    --radius: 1.5rem;
   }
 
   .dark {
-    --background: 265 40% 5%; /* Deep Midnight Purple */
+    --background: 265 40% 5%;
     --foreground: 40 30% 98%;
     --card: 265 30% 8%;
     --card-foreground: 40 30% 98%;
     --popover: 265 30% 8%;
     --popover-foreground: 40 30% 98%;
-    --primary: 265 50% 65%; /* Light Vibrant Purple */
+    --primary: 265 50% 65%;
     --primary-foreground: 265 40% 5%;
     --secondary: 265 30% 12%;
     --secondary-foreground: 40 30% 98%;
@@ -62,21 +62,22 @@
 }
 
 .glass {
-  @apply bg-background/80 backdrop-blur-md border border-white/5;
+  @apply bg-background/80 backdrop-blur-md border border-white/10;
 }
 
 .shadow-soft {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
 }
 
-::-webkit-scrollbar {
-  width: 8px;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-muted/20 rounded-full hover:bg-muted/40;
+/* Custom Hover Effects for Buttons */
+.btn-hover-lavender:hover {
+  @apply bg-primary/10 text-primary;
 }
