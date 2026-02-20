@@ -36,7 +36,8 @@ import {
   Music,
   Video,
   Scale,
-  Camera
+  Camera,
+  Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -259,7 +260,7 @@ export default function OnboardingFlow() {
         );
       case 4:
         return (
-          <div className="space-y-8 animate-in fade-in duration-500 text-center py-10">
+          <div className="space-y-8 animate-in duration-500 text-center py-10">
             <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
               <Trophy className="w-12 h-12 text-primary" />
             </div>
@@ -271,7 +272,7 @@ export default function OnboardingFlow() {
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">Initial Peer Rating</p>
               <div className="flex gap-1.5">
                 {[1, 2, 3, 4, 5].map(i => (
-                  <Star key={i} className={cn("w-6 h-6", i <= 4 ? "text-yellow-500 fill-yellow-500" : i === 5 ? "text-yellow-500/50 fill-yellow-500/20" : "text-muted")} />
+                  <Star className={cn("w-6 h-6", i <= 4 ? "text-yellow-500 fill-yellow-500" : i === 5 ? "text-yellow-500/50 fill-yellow-500/20" : "text-muted")} />
                 ))}
               </div>
               <p className="text-xs font-bold text-primary">Baseline: 4.5 Stars</p>
@@ -328,3 +329,17 @@ export default function OnboardingFlow() {
     </div>
   );
 }
+
+const Star = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
