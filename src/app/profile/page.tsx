@@ -22,7 +22,8 @@ import {
   Check,
   Link as LinkIcon,
   Camera,
-  ImageIcon
+  ImageIcon,
+  X
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -58,7 +59,7 @@ export default function ProfilePage() {
       try {
         const parsed = JSON.parse(stored);
         setUserData(parsed);
-        // In a real app, these would come from the user profile data
+        // Initial mock profile image
         setProfileImage(`https://picsum.photos/seed/${parsed.fullName}/200/200`);
       } catch (e) {
         setUserData(MOCK_USER);
@@ -88,11 +89,21 @@ export default function ProfilePage() {
       const imageUrl = URL.createObjectURL(file);
       if (type === 'avatar') {
         setProfileImage(imageUrl);
-        toast({ title: "Avatar Updated", description: "Your profile picture has been changed locally." });
+        toast({ title: "Avatar Updated", description: "Your profile picture has been changed." });
       } else {
         setBannerImage(imageUrl);
-        toast({ title: "Banner Updated", description: "Your profile banner has been changed locally." });
+        toast({ title: "Banner Updated", description: "Your profile banner has been changed." });
       }
+    }
+  };
+
+  const handleRemoveImage = (type: 'avatar' | 'banner') => {
+    if (type === 'avatar') {
+      setProfileImage(null);
+      toast({ title: "Avatar Removed", description: "Your profile picture has been reset." });
+    } else {
+      setBannerImage(null);
+      toast({ title: "Banner Removed", description: "Your profile banner has been reset." });
     }
   };
 
@@ -113,8 +124,8 @@ export default function ProfilePage() {
       >
         <div className="absolute inset-0 bg-black/10" />
         
-        {/* Banner Edit Button */}
-        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+        {/* Banner Edit Buttons */}
+        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-2">
           <input 
             type="file" 
             ref={bannerInputRef} 
@@ -130,6 +141,16 @@ export default function ProfilePage() {
           >
             <ImageIcon className="w-4 h-4" /> Change Banner
           </Button>
+          {bannerImage && (
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="rounded-full gap-2 font-bold shadow-lg"
+              onClick={() => handleRemoveImage('banner')}
+            >
+              <X className="w-4 h-4" /> Remove
+            </Button>
+          )}
         </div>
 
         <div className="max-w-6xl mx-auto px-4 relative h-full">
@@ -144,11 +165,27 @@ export default function ProfilePage() {
               </Avatar>
               
               {/* Avatar Edit Overlay */}
-              <div 
-                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer rounded-full"
-                onClick={() => avatarInputRef.current?.click()}
-              >
-                <Camera className="w-8 h-8 text-white" />
+              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity rounded-full">
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20 rounded-full"
+                    onClick={() => avatarInputRef.current?.click()}
+                  >
+                    <Camera className="w-6 h-6" />
+                  </Button>
+                  {profileImage && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white hover:bg-white/20 rounded-full"
+                      onClick={() => handleRemoveImage('avatar')}
+                    >
+                      <X className="w-6 h-6" />
+                    </Button>
+                  )}
+                </div>
                 <input 
                   type="file" 
                   ref={avatarInputRef} 
