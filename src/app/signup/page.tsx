@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -27,10 +26,15 @@ import {
   Database,
   Cloud,
   Globe,
-  Music,
-  Camera,
   Heart,
-  Briefcase
+  Briefcase,
+  Shield,
+  Search,
+  Cpu,
+  Microscope,
+  Leaf,
+  Megaphone,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -44,22 +48,28 @@ const INTEREST_CATEGORIES = [
   { id: 'startups', label: 'Startups', icon: <Zap className="w-5 h-5" />, image: 'https://picsum.photos/seed/startup/400/300' },
   { id: 'robotics', label: 'Robotics', icon: <Layers className="w-5 h-5" />, image: 'https://picsum.photos/seed/robot/400/400' },
   { id: 'blockchain', label: 'Blockchain', icon: <Database className="w-5 h-5" />, image: 'https://picsum.photos/seed/block/400/310' },
-  { id: 'data-science', label: 'Data Science', icon: <Layers className="w-5 h-5" />, image: 'https://picsum.photos/seed/data/400/320' },
+  { id: 'data-science', label: 'Data Science', icon: <BarChart3 className="w-5 h-5" />, image: 'https://picsum.photos/seed/data/400/320' },
   { id: 'open-source', label: 'Open Source', icon: <Globe className="w-5 h-5" />, image: 'https://picsum.photos/seed/open/400/330' },
   { id: 'social-impact', label: 'Social Impact', icon: <Heart className="w-5 h-5" />, image: 'https://picsum.photos/seed/social/400/340' },
   { id: 'fintech', label: 'FinTech', icon: <Briefcase className="w-5 h-5" />, image: 'https://picsum.photos/seed/fin/400/350' },
+  { id: 'cybersecurity', label: 'Cybersecurity', icon: <Shield className="w-5 h-5" />, image: 'https://picsum.photos/seed/secure/400/360' },
+  { id: 'sustainability', label: 'Sustainability', icon: <Leaf className="w-5 h-5" />, image: 'https://picsum.photos/seed/leaf/400/370' },
+  { id: 'bio-tech', label: 'BioTech', icon: <Microscope className="w-5 h-5" />, image: 'https://picsum.photos/seed/bio/400/380' },
+  { id: 'marketing', label: 'Marketing', icon: <Megaphone className="w-5 h-5" />, image: 'https://picsum.photos/seed/market/400/390' },
 ];
 
 const TECH_SKILLS = [
   'React', 'Next.js', 'Node.js', 'Python', 'Solidity', 'AWS', 'Docker', 
   'TensorFlow', 'Flutter', 'TypeScript', 'SQL', 'MongoDB', 'Go', 
-  'Rust', 'Kubernetes', 'Firebase', 'GraphQL', 'Django', 'C++', 'Java'
+  'Rust', 'Kubernetes', 'Firebase', 'GraphQL', 'Django', 'C++', 'Java',
+  'Three.js', 'C#', 'Azure', 'Swift', 'Kotlin', 'R', 'MATLAB', 'PHP'
 ];
 
 const NON_TECH_SKILLS = [
-  'Photography', 'Dance', 'Music', 'Public Speaking', 'Graphic Design', 'Project Management', 
-  'UI/UX', 'User Research', 'Marketing', 'Business Strategy', 'Content Writing', 
-  'Video Editing', 'Event Planning', 'Financial Modeling', 'Legal Tech', 'Sales'
+  'Photography', 'Graphic Design', 'Project Management', 'UI/UX', 
+  'User Research', 'Marketing', 'Business Strategy', 'Content Writing', 
+  'Video Editing', 'Event Planning', 'Financial Modeling', 'Legal Tech', 'Sales',
+  'Public Speaking', 'Illustration', 'Copywriting', 'SEO', 'Product Ownership'
 ];
 
 export default function OnboardingFlow() {
@@ -251,7 +261,7 @@ export default function OnboardingFlow() {
           <Progress value={(step / 4) * 100} className="h-2 max-w-md mx-auto rounded-full" />
         </div>
 
-        <Card className="border-none shadow-soft overflow-hidden">
+        <Card className="border-none shadow-soft overflow-hidden bg-white">
           <CardHeader className="bg-white border-b p-8">
             <CardTitle className="text-3xl font-bold font-headline">Onboarding</CardTitle>
           </CardHeader>

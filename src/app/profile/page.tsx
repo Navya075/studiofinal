@@ -1,13 +1,22 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Star, MessageSquare, Briefcase, Award, ExternalLink, Mail, Github, Linkedin, Globe, GraduationCap, Trophy, CheckCircle2 } from 'lucide-react';
+import { 
+  Star, 
+  Briefcase, 
+  Award, 
+  Mail, 
+  Github, 
+  Linkedin, 
+  Globe, 
+  GraduationCap 
+} from 'lucide-react';
 
 const MOCK_USER = {
   fullName: "John Doe",
@@ -41,7 +50,7 @@ export default function ProfilePage() {
     setIsLoading(false);
   }, []);
 
-  if (isLoading) return null;
+  if (isLoading || !userData) return null;
 
   return (
     <div className="min-h-screen bg-background pt-16">
@@ -51,31 +60,30 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - User Identity & Contact */}
           <div className="space-y-6">
-            <Card className="border-none shadow-soft overflow-hidden">
-              <div className="h-32 bg-gradient-to-r from-primary to-tech" />
+            <Card className="border-none shadow-soft overflow-hidden bg-white">
+              <div className="h-32 bg-gradient-to-r from-primary to-creative" />
               <CardContent className="relative pt-0 px-6 pb-8">
-                <Avatar className="w-24 h-24 border-4 border-background absolute -top-12 shadow-lg">
+                <Avatar className="w-24 h-24 border-4 border-white absolute -top-12 shadow-lg">
                   <AvatarFallback className="bg-primary text-white text-xl font-bold">
                     {userData.fullName.split(' ').map((n: string) => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="pt-16 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h1 className="text-2xl font-bold font-headline">{userData.fullName}</h1>
-                      <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium mt-1">
-                        <GraduationCap className="w-4 h-4" />
-                        <span>{userData.major}, Class of {userData.graduationYear}</span>
-                      </div>
+                  <div>
+                    <h1 className="text-2xl font-bold font-headline">{userData.fullName}</h1>
+                    <div className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium mt-1">
+                      <GraduationCap className="w-4 h-4" />
+                      <span>{userData.major}, Class of {userData.graduationYear}</span>
                     </div>
                   </div>
+                  
                   <p className="text-sm leading-relaxed text-muted-foreground italic">
                     "{userData.bio || 'No bio provided yet.'}"
                   </p>
                   
                   <div className="grid grid-cols-2 gap-4 py-4 border-y">
                     <div className="text-center">
-                      <div className="text-xl font-bold text-tech">{userData.points || 0}</div>
+                      <div className="text-xl font-bold text-primary">{userData.points || 0}</div>
                       <div className="text-[10px] font-bold text-muted-foreground uppercase">Collab Points</div>
                     </div>
                     <div className="text-center border-l">
@@ -90,7 +98,7 @@ export default function ProfilePage() {
                       <span>{userData.email}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <GraduationCap className="w-4 h-4" />
+                      <Globe className="w-4 h-4" />
                       <span>{userData.university}</span>
                     </div>
                   </div>
@@ -102,7 +110,7 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-soft p-6 space-y-4">
+            <Card className="border-none shadow-soft p-6 space-y-4 bg-white">
               <h3 className="font-bold font-headline text-sm uppercase tracking-widest text-muted-foreground">Connect</h3>
               <div className="space-y-3">
                 <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-muted/30">
@@ -110,9 +118,6 @@ export default function ProfilePage() {
                 </Button>
                 <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-muted/30">
                   <Linkedin className="w-4 h-4 text-blue-600" /> LinkedIn
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-muted/30">
-                  <Globe className="w-4 h-4 text-green-600" /> Portfolio
                 </Button>
               </div>
             </Card>
@@ -122,18 +127,22 @@ export default function ProfilePage() {
           <div className="lg:col-span-2 space-y-8">
             <section className="space-y-4">
               <h2 className="text-xl font-bold font-headline flex items-center gap-2">
-                <Award className="w-5 h-5 text-tech" /> Domain Expertise
+                <Award className="w-5 h-5 text-primary" /> Domain Expertise
               </h2>
               <div className="flex flex-wrap gap-3">
-                {userData.skills?.map((skill: string, i: number) => (
-                  <Badge 
-                    key={i} 
-                    variant="outline" 
-                    className="px-4 py-2 text-sm rounded-xl border-2 border-primary/30 text-primary font-bold hover:bg-primary/5 transition-colors cursor-default"
-                  >
-                    {skill}
-                  </Badge>
-                ))}
+                {userData.skills?.length > 0 ? (
+                  userData.skills.map((skill: string, i: number) => (
+                    <Badge 
+                      key={i} 
+                      variant="outline" 
+                      className="px-4 py-2 text-sm rounded-xl border-2 border-primary/30 text-primary font-bold hover:bg-primary/5 transition-colors cursor-default"
+                    >
+                      {skill}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No skills added yet.</p>
+                )}
               </div>
             </section>
 
@@ -142,15 +151,19 @@ export default function ProfilePage() {
                 <Star className="w-5 h-5 text-creative" /> Interests
               </h2>
               <div className="flex flex-wrap gap-3">
-                {userData.interests?.map((interest: string, i: number) => (
-                  <Badge 
-                    key={i} 
-                    variant="secondary" 
-                    className="px-4 py-2 text-sm rounded-xl bg-muted/50 font-medium"
-                  >
-                    {interest}
-                  </Badge>
-                ))}
+                {userData.interests?.length > 0 ? (
+                  userData.interests.map((interest: string, i: number) => (
+                    <Badge 
+                      key={i} 
+                      variant="secondary" 
+                      className="px-4 py-2 text-sm rounded-xl bg-muted/50 font-medium"
+                    >
+                      {interest}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No interests added yet.</p>
+                )}
               </div>
             </section>
 
@@ -163,7 +176,7 @@ export default function ProfilePage() {
                   { title: "AI Study Companion", role: "Frontend Developer", status: "In Progress" },
                   { title: "Campus Vote Blockchain", role: "Contributor", status: "Active" }
                 ].map((project, idx) => (
-                  <Card key={idx} className="border-none shadow-soft group hover:shadow-md transition-all">
+                  <Card key={idx} className="border-none shadow-soft group hover:shadow-md transition-all bg-white">
                     <CardContent className="p-5 flex justify-between items-center">
                       <div>
                         <h4 className="font-bold">{project.title}</h4>
