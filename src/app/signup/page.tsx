@@ -23,7 +23,14 @@ import {
   GraduationCap,
   X,
   Trophy,
-  Layers
+  Layers,
+  Database,
+  Cloud,
+  Globe,
+  Music,
+  Camera,
+  Heart,
+  Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -36,16 +43,23 @@ const INTEREST_CATEGORIES = [
   { id: 'ui-ux', label: 'UI/UX Design', icon: <Palette className="w-5 h-5" />, image: 'https://picsum.photos/seed/design/400/450' },
   { id: 'startups', label: 'Startups', icon: <Zap className="w-5 h-5" />, image: 'https://picsum.photos/seed/startup/400/300' },
   { id: 'robotics', label: 'Robotics', icon: <Layers className="w-5 h-5" />, image: 'https://picsum.photos/seed/robot/400/400' },
+  { id: 'blockchain', label: 'Blockchain', icon: <Database className="w-5 h-5" />, image: 'https://picsum.photos/seed/block/400/310' },
+  { id: 'data-science', label: 'Data Science', icon: <Layers className="w-5 h-5" />, image: 'https://picsum.photos/seed/data/400/320' },
+  { id: 'open-source', label: 'Open Source', icon: <Globe className="w-5 h-5" />, image: 'https://picsum.photos/seed/open/400/330' },
+  { id: 'social-impact', label: 'Social Impact', icon: <Heart className="w-5 h-5" />, image: 'https://picsum.photos/seed/social/400/340' },
+  { id: 'fintech', label: 'FinTech', icon: <Briefcase className="w-5 h-5" />, image: 'https://picsum.photos/seed/fin/400/350' },
 ];
 
 const TECH_SKILLS = [
   'React', 'Next.js', 'Node.js', 'Python', 'Solidity', 'AWS', 'Docker', 
-  'TensorFlow', 'Flutter', 'TypeScript'
+  'TensorFlow', 'Flutter', 'TypeScript', 'SQL', 'MongoDB', 'Go', 
+  'Rust', 'Kubernetes', 'Firebase', 'GraphQL', 'Django', 'C++', 'Java'
 ];
 
 const NON_TECH_SKILLS = [
   'Photography', 'Dance', 'Music', 'Public Speaking', 'Graphic Design', 'Project Management', 
-  'UI/UX', 'User Research'
+  'UI/UX', 'User Research', 'Marketing', 'Business Strategy', 'Content Writing', 
+  'Video Editing', 'Event Planning', 'Financial Modeling', 'Legal Tech', 'Sales'
 ];
 
 export default function OnboardingFlow() {
@@ -68,6 +82,22 @@ export default function OnboardingFlow() {
 
   const onFinalSubmit = () => {
     setIsSubmitting(true);
+    
+    const userData = {
+      fullName: 'John Doe',
+      email: 'john@university.edu',
+      university: 'Stanford University',
+      major: 'Computer Science',
+      degree: 'Bachelor of Science',
+      graduationYear: '2026',
+      bio: 'Passionate developer building tools for student collaboration.',
+      skills,
+      interests,
+      points: 100
+    };
+    
+    localStorage.setItem('cc_current_user', JSON.stringify(userData));
+
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
@@ -109,7 +139,7 @@ export default function OnboardingFlow() {
             </div>
             <div className="space-y-4">
               <Label className="text-lg font-bold flex items-center gap-2">
-                <Palette className="w-5 h-5 text-creative" /> Creative & Sports
+                <Palette className="w-5 h-5 text-creative" /> Creative & Professional
               </Label>
               <div className="flex flex-wrap gap-2">
                 {NON_TECH_SKILLS.map(skill => (
@@ -169,20 +199,23 @@ export default function OnboardingFlow() {
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold font-headline">Passion Board</h3>
-              <p className="text-sm text-muted-foreground">Select your interests.</p>
+              <p className="text-sm text-muted-foreground">Select your interests and vision areas.</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {INTEREST_CATEGORIES.map((cat) => (
                 <div 
                   key={cat.id} 
                   onClick={() => toggleInterest(cat.id)}
                   className={cn(
-                    "relative rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 border-2",
+                    "relative rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 border-2 aspect-square",
                     interests.includes(cat.id) ? "border-primary shadow-xl scale-[0.98]" : "border-transparent"
                   )}
                 >
-                  <img src={cat.image} alt={cat.label} className="w-full h-32 object-cover" />
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-2 text-center text-white font-bold text-xs">
+                  <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-2 text-center text-white font-bold text-xs gap-2">
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                      {cat.icon}
+                    </div>
                     {cat.label}
                   </div>
                 </div>

@@ -9,17 +9,39 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Star, MessageSquare, Briefcase, Award, ExternalLink, Mail, Github, Linkedin, Globe, GraduationCap, Trophy, CheckCircle2 } from 'lucide-react';
 
+const MOCK_USER = {
+  fullName: "John Doe",
+  email: "john.doe@university.edu",
+  university: "Stanford University",
+  major: "Computer Science",
+  degree: "B.S.",
+  graduationYear: "2026",
+  bio: "Passionate about building scalable web applications and exploring the future of blockchain and AI.",
+  points: 2450,
+  skills: ["React", "Next.js", "TypeScript", "Python", "Tailwind CSS"],
+  interests: ["Hackathons", "AI/ML", "Open Source", "Startups"]
+};
+
 export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Attempt to load from localStorage, fallback to MOCK_USER
     const stored = localStorage.getItem('cc_current_user');
     if (stored) {
-      setUserData(JSON.parse(stored));
+      try {
+        setUserData(JSON.parse(stored));
+      } catch (e) {
+        setUserData(MOCK_USER);
+      }
+    } else {
+      setUserData(MOCK_USER);
     }
+    setIsLoading(false);
   }, []);
 
-  if (!userData) return null;
+  if (isLoading) return null;
 
   return (
     <div className="min-h-screen bg-background pt-16">
@@ -57,7 +79,7 @@ export default function ProfilePage() {
                       <div className="text-[10px] font-bold text-muted-foreground uppercase">Collab Points</div>
                     </div>
                     <div className="text-center border-l">
-                      <div className="text-xl font-bold text-creative">0</div>
+                      <div className="text-xl font-bold text-creative">3</div>
                       <div className="text-[10px] font-bold text-muted-foreground uppercase">Projects</div>
                     </div>
                   </div>
@@ -74,10 +96,25 @@ export default function ProfilePage() {
                   </div>
 
                   <Button className="w-full bg-foreground text-background rounded-xl h-11 mt-4" asChild>
-                    <a href="/settings">Edit Profile Settings</a>
+                    <Link href="/settings">Edit Profile Settings</Link>
                   </Button>
                 </div>
               </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-soft p-6 space-y-4">
+              <h3 className="font-bold font-headline text-sm uppercase tracking-widest text-muted-foreground">Connect</h3>
+              <div className="space-y-3">
+                <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-muted/30">
+                  <Github className="w-4 h-4" /> GitHub
+                </Button>
+                <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-muted/30">
+                  <Linkedin className="w-4 h-4 text-blue-600" /> LinkedIn
+                </Button>
+                <Button variant="outline" className="w-full justify-start gap-3 rounded-xl border-muted/30">
+                  <Globe className="w-4 h-4 text-green-600" /> Portfolio
+                </Button>
+              </div>
             </Card>
           </div>
 
@@ -113,6 +150,28 @@ export default function ProfilePage() {
                   >
                     {interest}
                   </Badge>
+                ))}
+              </div>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-xl font-bold font-headline flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-hackathon" /> Active Projects
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { title: "AI Study Companion", role: "Frontend Developer", status: "In Progress" },
+                  { title: "Campus Vote Blockchain", role: "Contributor", status: "Active" }
+                ].map((project, idx) => (
+                  <Card key={idx} className="border-none shadow-soft group hover:shadow-md transition-all">
+                    <CardContent className="p-5 flex justify-between items-center">
+                      <div>
+                        <h4 className="font-bold">{project.title}</h4>
+                        <p className="text-xs text-muted-foreground">{project.role}</p>
+                      </div>
+                      <Badge className="bg-green-500/10 text-green-600 border-green-500/20">{project.status}</Badge>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </section>
