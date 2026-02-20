@@ -36,8 +36,9 @@ import {
   Music,
   Video,
   Scale,
-  Camera,
-  Check
+  Check,
+  Star,
+  Chrome
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -68,15 +69,12 @@ const INTEREST_CATEGORIES = [
 const TECH_SKILLS = [
   'React', 'Next.js', 'Node.js', 'Python', 'Solidity', 'AWS', 'Docker', 
   'TensorFlow', 'Flutter', 'TypeScript', 'SQL', 'MongoDB', 'Go', 
-  'Rust', 'Kubernetes', 'Firebase', 'GraphQL', 'Django', 'C++', 'Java',
-  'Three.js', 'C#', 'Azure', 'Swift', 'Kotlin', 'R', 'MATLAB', 'PHP'
+  'Rust', 'Kubernetes', 'Firebase', 'GraphQL', 'Django', 'C++', 'Java'
 ];
 
 const NON_TECH_SKILLS = [
   'Photography', 'Graphic Design', 'Project Management', 'UI/UX', 
-  'User Research', 'Marketing', 'Business Strategy', 'Content Writing', 
-  'Video Editing', 'Event Planning', 'Financial Modeling', 'Legal Tech', 'Sales',
-  'Public Speaking', 'Illustration', 'Copywriting', 'SEO', 'Product Ownership'
+  'User Research', 'Marketing', 'Business Strategy', 'Content Writing'
 ];
 
 export default function OnboardingFlow() {
@@ -99,23 +97,17 @@ export default function OnboardingFlow() {
 
   const onFinalSubmit = () => {
     setIsSubmitting(true);
-    
     const userData = {
       fullName: 'John Doe',
       email: 'john@university.edu',
       university: 'Stanford University',
       major: 'Computer Science',
-      degree: 'Bachelor of Science',
-      graduationYear: '2026',
-      bio: 'Passionate developer building tools for student collaboration.',
       skills,
       interests,
       points: 100,
       rating: 4.5
     };
-    
     localStorage.setItem('cc_current_user', JSON.stringify(userData));
-
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
@@ -131,7 +123,9 @@ export default function OnboardingFlow() {
       case 1:
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="text-center mb-6">
+            <div className="text-center mb-6 relative">
+              <Star className="absolute -top-4 -left-4 w-6 h-6 text-primary/20 animate-pulse" />
+              <Star className="absolute top-0 -right-4 w-4 h-4 text-primary/40 animate-bounce" />
               <h3 className="text-3xl font-bold font-headline">Select Your Domains</h3>
               <p className="text-sm text-muted-foreground">Choose the badges that best represent your core strengths.</p>
             </div>
@@ -184,6 +178,17 @@ export default function OnboardingFlow() {
               <h3 className="text-3xl font-bold font-headline">Profile Identity</h3>
               <p className="text-sm text-muted-foreground">How should the community address you?</p>
             </div>
+            
+            <div className="flex flex-col gap-4">
+              <Button variant="outline" className="h-14 rounded-2xl gap-3 font-bold border-muted/30 hover:bg-muted/10 transition-all">
+                <Chrome className="w-5 h-5 text-primary" /> Join with Google
+              </Button>
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-muted-foreground font-bold tracking-widest">Or Continue With</span></div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
                 <Label className="font-bold">Full Name</Label>
@@ -208,19 +213,7 @@ export default function OnboardingFlow() {
                   <Label className="text-xs uppercase tracking-widest text-muted-foreground">Major</Label>
                   <Input placeholder="e.g. Computer Science" defaultValue="Computer Science" className="h-11 rounded-xl" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Degree Level</Label>
-                  <Input placeholder="e.g. Bachelor of Science" defaultValue="Bachelor of Science" className="h-11 rounded-xl" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Graduation Year</Label>
-                  <Input placeholder="e.g. 2026" defaultValue="2026" className="h-11 rounded-xl" />
-                </div>
               </div>
-            </div>
-            <div className="space-y-3">
-              <Label className="font-bold">Professional Bio</Label>
-              <Textarea placeholder="What drives you? Share your vision..." className="resize-none h-32 rounded-3xl p-4" defaultValue="Passionate developer building tools for student collaboration." />
             </div>
           </div>
         );
@@ -261,12 +254,18 @@ export default function OnboardingFlow() {
       case 4:
         return (
           <div className="space-y-8 animate-in duration-500 text-center py-10 flex flex-col items-center">
-            <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner">
-              <Trophy className="w-12 h-12 text-primary" />
+            <div className="relative">
+              <div className="absolute -inset-4 bg-primary/20 blur-2xl rounded-full animate-pulse" />
+              <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner relative z-10">
+                <Trophy className="w-12 h-12 text-primary" />
+              </div>
             </div>
             <div className="space-y-2">
               <h3 className="text-4xl font-bold font-headline">Genesis Complete</h3>
               <p className="text-muted-foreground text-lg">You've earned 100 Collab Points for joining the ecosystem.</p>
+            </div>
+            <div className="flex gap-2 pt-4">
+              {[1, 2, 3].map(i => <Star key={i} className="w-8 h-8 text-yellow-500 fill-yellow-500 animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />)}
             </div>
           </div>
         );
@@ -276,8 +275,15 @@ export default function OnboardingFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 py-12">
-      <div className="w-full max-w-6xl space-y-10">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 py-12 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <Star className="absolute top-[10%] left-[5%] w-12 h-12 text-primary/5 rotate-12" />
+        <Star className="absolute top-[80%] right-[10%] w-20 h-20 text-primary/5 -rotate-12" />
+        <div className="absolute top-[40%] right-[-5%] w-64 h-64 bg-primary/5 blur-[100px] rounded-full" />
+      </div>
+
+      <div className="w-full max-w-6xl space-y-10 relative z-10">
         <div className="text-center space-y-6">
           <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
             <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-xl shadow-primary/30 group-hover:scale-110 transition-transform duration-500">

@@ -11,7 +11,7 @@ import {
   Send, Plus, Paperclip, Smile, Mic, MicOff, Video, VideoOff, 
   PhoneOff, ScreenShare, Calendar as CalendarIcon, MoreVertical, 
   Search, File, Download, ExternalLink, Clock, CheckCircle2, 
-  Star, Trophy, Award, RefreshCw, Globe, Loader2
+  Star, Trophy, Award, RefreshCw, Globe, Loader2, LayoutGrid, Hand, MessageSquare, UserPlus, Shield
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { MOCK_PROJECTS } from '@/app/dashboard/page';
+import { cn } from '@/lib/utils';
 
 const TEAM_MEMBERS = [
   { id: '1', name: 'John Doe', role: 'Team Lead / Frontend', skills: ['React', 'NextJS'], image: 'https://picsum.photos/seed/user/100/100' },
@@ -49,6 +50,7 @@ export default function TeamRoomPage() {
   const [activeTab, setActiveTab] = useState('chat');
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [ratings, setRatings] = useState<Record<string, number>>({});
   
@@ -202,31 +204,101 @@ export default function TeamRoomPage() {
         );
       case 'video':
         return (
-          <div className="h-full bg-slate-950 flex flex-col items-center justify-center p-8 text-white animate-in zoom-in duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl w-full flex-1 mb-8">
-               {[1, 2, 3, 4].map(i => (
-                 <div key={i} className="bg-slate-900 rounded-3xl relative overflow-hidden flex items-center justify-center border border-white/5 aspect-video group">
-                   <img 
-                    src={`https://picsum.photos/seed/caller${i}/800/600`} 
-                    alt="caller" 
-                    className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000" 
-                   />
-                 </div>
-               ))}
+          <div className="h-full bg-[#202124] flex flex-col animate-in zoom-in duration-500 overflow-hidden">
+            {/* Meet Header */}
+            <header className="p-4 flex items-center justify-between text-white/90">
+              <div className="flex items-center gap-4">
+                <span className="font-bold tracking-tight text-lg">{project.title} - Video Sync</span>
+                <div className="h-4 w-[1px] bg-white/20" />
+                <span className="text-sm font-medium opacity-60">10:45 AM | {projectId}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full"><LayoutGrid className="w-5 h-5" /></Button>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full"><UserPlus className="w-5 h-5" /></Button>
+              </div>
+            </header>
+
+            {/* Video Grid */}
+            <div className="flex-1 p-4 overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full max-w-7xl mx-auto">
+                {TEAM_MEMBERS.map((member, i) => (
+                  <div key={member.id} className="relative bg-[#3c4043] rounded-2xl overflow-hidden aspect-video border border-white/5 flex items-center justify-center group shadow-xl">
+                    <img 
+                      src={`https://picsum.photos/seed/${member.id}/800/600`} 
+                      alt={member.name} 
+                      className={cn(
+                        "w-full h-full object-cover transition-all duration-700",
+                        i === 0 && isVideoOff ? "opacity-0" : "opacity-80"
+                      )} 
+                    />
+                    
+                    {/* Avatar Fallback for Off Video */}
+                    {(i === 0 && isVideoOff) && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Avatar className="w-24 h-24 border-4 border-white/10 bg-primary/20">
+                          <AvatarFallback className="text-4xl font-bold text-white">{member.name[0]}</AvatarFallback>
+                        </Avatar>
+                      </div>
+                    )}
+
+                    <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full">
+                       <span className="text-xs font-bold text-white">{member.name} {i === 0 && "(You)"}</span>
+                       {(i === 1 || (i === 0 && isMuted)) && <MicOff className="w-3.5 h-3.5 text-red-400" />}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="glass rounded-3xl p-5 flex items-center gap-6 shadow-2xl border-white/10 bg-slate-900/80">
-              <Button onClick={() => setIsMuted(!isMuted)} className={`w-14 h-14 rounded-2xl hover:bg-white/10 text-white ${isMuted ? 'bg-destructive/80' : ''}`}>
-                {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-              </Button>
-              <Button onClick={() => setIsVideoOff(!isVideoOff)} className={`w-14 h-14 rounded-2xl hover:bg-white/10 text-white ${isVideoOff ? 'bg-destructive/80' : ''}`}>
-                {isVideoOff ? <VideoOff className="w-6 h-6" /> : <Video className="w-6 h-6" />}
-              </Button>
-              <div className="w-px h-10 bg-white/10" />
-              <Button variant="destructive" className="w-16 h-16 rounded-2xl shadow-xl shadow-destructive/20" onClick={() => setActiveTab('chat')}>
-                <PhoneOff className="w-8 h-8" />
-              </Button>
-            </div>
+            {/* Meet Controls Bar */}
+            <footer className="p-6 flex items-center justify-center gap-4 bg-[#202124]">
+              <div className="flex items-center gap-4">
+                <Button 
+                  onClick={() => setIsMuted(!isMuted)} 
+                  className={cn(
+                    "w-12 h-12 rounded-full transition-all",
+                    isMuted ? "bg-red-500 hover:bg-red-600" : "bg-white/10 hover:bg-white/20 text-white"
+                  )}
+                >
+                  {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </Button>
+                <Button 
+                  onClick={() => setIsVideoOff(!isVideoOff)} 
+                  className={cn(
+                    "w-12 h-12 rounded-full transition-all",
+                    isVideoOff ? "bg-red-500 hover:bg-red-600" : "bg-white/10 hover:bg-white/20 text-white"
+                  )}
+                >
+                  {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+                </Button>
+                
+                <div className="w-[1px] h-8 bg-white/10 mx-2" />
+                
+                <Button 
+                  variant="ghost" 
+                  className={cn(
+                    "w-12 h-12 rounded-full hover:bg-white/10 text-white",
+                    isScreenSharing && "bg-primary/20 text-primary hover:bg-primary/30"
+                  )}
+                  onClick={() => setIsScreenSharing(!isScreenSharing)}
+                >
+                  <ScreenShare className="w-5 h-5" />
+                </Button>
+                <Button variant="ghost" className="w-12 h-12 rounded-full hover:bg-white/10 text-white"><Hand className="w-5 h-5" /></Button>
+                <Button variant="ghost" className="w-12 h-12 rounded-full hover:bg-white/10 text-white"><Smile className="w-5 h-5" /></Button>
+                <Button variant="ghost" className="w-12 h-12 rounded-full hover:bg-white/10 text-white"><MoreVertical className="w-5 h-5" /></Button>
+                
+                <div className="w-[1px] h-8 bg-white/10 mx-2" />
+
+                <Button 
+                  variant="destructive" 
+                  className="w-16 h-12 rounded-full shadow-xl shadow-destructive/20 gap-2 font-bold" 
+                  onClick={() => setActiveTab('chat')}
+                >
+                  <PhoneOff className="w-5 h-5" /> Leave
+                </Button>
+              </div>
+            </footer>
           </div>
         );
       case 'calendar':
