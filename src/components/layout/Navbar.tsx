@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -15,20 +16,37 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface NavbarProps {
   isDashboard?: boolean;
 }
 
-const MOCK_NOTIFICATIONS = [
-  { id: '1', title: 'Request Accepted', message: 'You have been added to Blockchain Campus Vote!', type: 'success', timestamp: new Date().toISOString(), read: false },
-  { id: '2', title: 'New Team Message', message: 'Sara Chen: "Hey, can you check the latest design tokens?"', type: 'message', timestamp: new Date().toISOString(), read: false },
-  { id: '3', title: 'Point Milestone', message: 'You just earned 50 points for completing your profile!', type: 'alert', timestamp: new Date().toISOString(), read: true },
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  timestamp: string;
+  read: boolean;
+}
+
+const INITIAL_NOTIFICATIONS: Notification[] = [
+  { id: '1', title: 'Request Accepted', message: 'You have been added to Blockchain Campus Vote!', type: 'success', timestamp: '', read: false },
+  { id: '2', title: 'New Team Message', message: 'Sara Chen: "Hey, can you check the latest design tokens?"', type: 'message', timestamp: '', read: false },
+  { id: '3', title: 'Point Milestone', message: 'You just earned 50 points for completing your profile!', type: 'alert', timestamp: '', read: true },
 ];
 
 export function Navbar({ isDashboard = false }: NavbarProps) {
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const now = new Date().toISOString();
+    setNotifications(prev => prev.map(n => ({ ...n, timestamp: n.timestamp || now })));
+  }, []);
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAllAsRead = () => {
@@ -89,7 +107,7 @@ export function Navbar({ isDashboard = false }: NavbarProps) {
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:bg-muted rounded-full">
               <Bell className="w-5 h-5" />
-              {unreadCount > 0 && (
+              {isClient && unreadCount > 0 && (
                 <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse" />
               )}
             </Button>
@@ -97,14 +115,14 @@ export function Navbar({ isDashboard = false }: NavbarProps) {
           <PopoverContent className="w-80 p-0 mt-2 shadow-xl border-muted/20" align="end">
             <div className="p-4 border-b bg-muted/5 flex items-center justify-between">
               <h3 className="font-bold text-sm font-headline">Notifications</h3>
-              {unreadCount > 0 && (
+              {isClient && unreadCount > 0 && (
                 <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-[10px] h-7 font-bold text-primary hover:text-primary hover:bg-primary/5 px-2">
                   Mark all as read
                 </Button>
               )}
             </div>
             <ScrollArea className="h-[350px]">
-              {notifications.length > 0 ? (
+              {isClient && notifications.length > 0 ? (
                 <div className="divide-y">
                   {notifications.map((n) => (
                     <div key={n.id} className={`p-4 flex gap-3 transition-colors ${!n.read ? 'bg-primary/5' : 'hover:bg-muted/30'}`}>
@@ -119,7 +137,7 @@ export function Navbar({ isDashboard = false }: NavbarProps) {
                           {n.message}
                         </p>
                         <p className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
-                          {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {n.timestamp ? new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                         </p>
                       </div>
                       {!n.read && (

@@ -1,17 +1,21 @@
 'use client';
 
-/**
- * Firebase Configuration
- * 
- * IMPORTANT: Replace these placeholder values with your actual Firebase project configuration.
- * You can find these in the Firebase Console: 
- * Project Settings > General > Your apps > Firebase SDK snippet > Config
- */
-export const firebaseConfig = {
-  apiKey: "AIzaSyB-REPLACE-WITH-YOUR-ACTUAL-API-KEY",
-  authDomain: "campus-connect-hub.firebaseapp.com",
-  projectId: "campus-connect-hub",
-  storageBucket: "campus-connect-hub.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-bXYuVYnVUIw1Vjqy2cTnf4BiwPKQJX8",
+  authDomain: "studio-931581063-87f5e.firebaseapp.com",
+  projectId: "studio-931581063-87f5e",
+  storageBucket: "studio-931581063-87f5e.firebasestorage.app",
+  messagingSenderId: "548580907731",
+  appId: "1:548580907731:web:d0fb7e6b446c56e9689226"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Export authentication
+export const auth = getAuth(app);
+
+export default app;
