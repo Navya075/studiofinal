@@ -11,14 +11,15 @@ import {
   Send, Plus, Paperclip, Smile, Mic, MicOff, Video, VideoOff, 
   PhoneOff, ScreenShare, Calendar as CalendarIcon, MoreVertical, 
   Search, File, Download, ExternalLink, Clock, CheckCircle2, 
-  Star, Trophy, Award, RefreshCw, Globe
+  Star, Trophy, Award, RefreshCw, Globe, Loader2
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
-import { MOCK_PROJECTS } from '@/app/dashboard/page';
+import { doc } from 'firebase/firestore';
+import { initializeFirebase, useDoc } from '@/firebase';
 
 const TEAM_MEMBERS = [
   { id: '1', name: 'John Doe', role: 'Team Lead / Frontend', skills: ['React', 'NextJS'], image: 'https://picsum.photos/seed/user/100/100' },
@@ -41,12 +42,14 @@ const GOOGLE_CAL_EVENTS = [
 export default function TeamRoomPage() {
   const params = useParams();
   const projectId = params?.id as string;
-  const project = useMemo(() => MOCK_PROJECTS.find(p => p.id === projectId), [projectId]);
+  const { db } = initializeFirebase();
+  
+  const projectRef = useMemo(() => projectId ? doc(db, 'projects', projectId) : null, [db, projectId]);
+  const { data: project, loading } = useDoc(projectRef);
 
   const [activeTab, setActiveTab] = useState('chat');
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
-  const [projectStatus, setProjectStatus] = useState<'Active' | 'Completed'>(project?.status === 'Completed' ? 'Completed' : 'Active');
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [ratings, setRatings] = useState<Record<string, number>>({});
   
@@ -69,7 +72,6 @@ export default function TeamRoomPage() {
   };
 
   const handleCompleteProject = () => {
-    setProjectStatus('Completed');
     setShowRatingDialog(true);
     toast({
       title: "Project Completed! 🎉",
@@ -85,6 +87,34 @@ export default function TeamRoomPage() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-muted-foreground font-medium">Entering Team Room...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background p-6">
+        <Card className="max-w-md w-full border-none shadow-soft text-center p-8 space-y-4">
+          <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mx-auto">
+            <Search className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h2 className="text-2xl font-bold font-headline">Project Not Found</h2>
+          <p className="text-muted-foreground leading-relaxed">The project room you are looking for doesn't exist or you don't have access to it.</p>
+          <Button variant="outline" className="w-full rounded-xl" asChild>
+            <a href="/dashboard">Back to Feed</a>
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
   const renderContent = () => {
     switch(activeTab) {
       case 'chat':
@@ -93,14 +123,14 @@ export default function TeamRoomPage() {
             <header className="h-16 border-b flex items-center px-6 justify-between bg-white shrink-0">
               <div className="flex items-center gap-2">
                 <h2 className="font-bold font-headline truncate max-w-[200px]">{project?.title || "Team Room"}</h2>
-                {projectStatus === 'Active' ? (
+                {project.status === 'Active' ? (
                   <div className="w-2 h-2 bg-green-500 rounded-full ml-2 animate-pulse" />
                 ) : (
-                  <Badge variant="secondary" className="ml-2 bg-tech/10 text-tech border-tech/20">Archived: Completed</Badge>
+                  <Badge variant="secondary" className="ml-2 bg-tech/10 text-tech border-tech/20">Archived: {project.status}</Badge>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {projectStatus === 'Active' && (
+                {project.status === 'Active' && (
                   <Button onClick={handleCompleteProject} variant="outline" className="border-tech text-tech hover:bg-tech/5 rounded-full px-4 h-9 text-xs font-bold gap-2">
                     <CheckCircle2 className="w-4 h-4" /> Mark as Completed
                   </Button>
@@ -112,7 +142,7 @@ export default function TeamRoomPage() {
             
             <ScrollArea className="flex-1 p-6 bg-muted/5">
               <div className="space-y-8 max-w-4xl mx-auto">
-                {projectStatus === 'Completed' && (
+                {project.status === 'Completed' && (
                   <div className="bg-tech/5 border border-tech/20 rounded-2xl p-6 text-center space-y-3 mb-8">
                     <Trophy className="w-10 h-10 text-tech mx-auto" />
                     <h3 className="font-bold text-lg">Project Milestone Reached!</h3>
@@ -147,11 +177,11 @@ export default function TeamRoomPage() {
             <div className="p-4 bg-white border-t shrink-0">
               <div className="max-w-4xl mx-auto flex items-end gap-2 bg-muted/30 rounded-2xl p-2 border focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                 <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-xl hover:bg-white"><Plus className="w-5 h-5" /></Button>
-                <Input disabled={projectStatus === 'Completed'} className="border-none bg-transparent shadow-none ring-0 focus-visible:ring-0 min-h-[40px]" placeholder={projectStatus === 'Completed' ? "Channel archived..." : "Type your message..."} />
+                <Input disabled={project.status === 'Completed'} className="border-none bg-transparent shadow-none ring-0 focus-visible:ring-0 min-h-[40px]" placeholder={project.status === 'Completed' ? "Channel archived..." : "Type your message..."} />
                 <div className="flex items-center px-2">
                   <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white"><Paperclip className="w-5 h-5" /></Button>
                   <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white"><Smile className="w-5 h-5" /></Button>
-                  <Button disabled={projectStatus === 'Completed'} className="h-10 w-10 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 ml-2"><Send className="w-4 h-4" /></Button>
+                  <Button disabled={project.status === 'Completed'} className="h-10 w-10 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 ml-2"><Send className="w-4 h-4" /></Button>
                 </div>
               </div>
             </div>
