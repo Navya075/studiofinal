@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -11,12 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, X, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
+import { addDoc, collection } from 'firebase/firestore';
+import { initializeFirebase, useUser } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
-interface PostCreationDialogProps {
-  onProjectCreated?: (project: any) => void;
-}
-
-export function PostCreationDialog({ onProjectCreated }: PostCreationDialogProps) {
+export function PostCreationDialog() {
+  const { db } = initializeFirebase();
+  const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [type, setType] = useState('Hackathon');
@@ -39,36 +40,42 @@ export function PostCreationDialog({ onProjectCreated }: PostCreationDialogProps
 
     setIsSubmitting(true);
     
-    // Create new project object
-    const newProject = {
-      id: Math.random().toString(36).substr(2, 9),
+    const projectData = {
       title,
-      status: 'Active',
-      timeLeft: 'Just now',
+      type,
       summary,
-      tags: skills,
-      owner: 'You',
-      members: 1,
-      maxMembers: teamSize,
-      dueDate: duration || 'TBD',
-      category: type === 'Hackathon' || type === 'Startup' ? 'Technical' : 'Non-Technical',
-      type: type,
-      isVerified: false
+      description,
+      requiredSkills: skills,
+      teamSize,
+      duration: duration || 'TBD',
+      status: 'Active',
+      isVerified: false,
+      ownerId: user?.uid || 'anonymous'
     };
 
-    // Simulating success
-    setTimeout(() => {
-      onProjectCreated?.(newProject);
-      toast({ title: "Success", description: "Your project post is now live!" });
-      setOpen(false);
-      setIsSubmitting(false);
-      // Reset form
-      setTitle('');
-      setSummary('');
-      setDescription('');
-      setSkills(['React', 'Next.js']);
-      setDuration('');
-    }, 800);
+    const projectsRef = collection(db, 'projects');
+
+    addDoc(projectsRef, projectData)
+      .then(() => {
+        toast({ title: "Success", description: "Your project post is now live!" });
+        setOpen(false);
+        setIsSubmitting(false);
+        // Reset form
+        setTitle('');
+        setSummary('');
+        setDescription('');
+        setSkills(['React', 'Next.js']);
+        setDuration('');
+      })
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: projectsRef.path,
+          operation: 'create',
+          requestResourceData: projectData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        setIsSubmitting(false);
+      });
   };
 
   return (

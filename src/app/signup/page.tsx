@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,11 @@ import {
   Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { doc, setDoc } from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
+import { initializeFirebase, useUser } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const INTEREST_CATEGORIES = [
   { id: 'hackathons', label: 'Hackathons', icon: <Rocket className="w-5 h-5" />, image: 'https://picsum.photos/seed/hack/400/300' },
@@ -66,6 +71,7 @@ export default function OnboardingFlow() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useUser();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -102,11 +108,43 @@ export default function OnboardingFlow() {
 
   const handleFinish = async () => {
     setIsSubmitting(true);
-    // Simulating profile creation without Firebase
-    setTimeout(() => {
+    const { auth, db } = initializeFirebase();
+
+    try {
+      let currentUser = user;
+      if (!currentUser) {
+        const cred = await signInAnonymously(auth);
+        currentUser = cred.user;
+      }
+
+      if (currentUser) {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const profileData = {
+          ...formData,
+          email: formData.email || currentUser.email || '',
+          rating: 5,
+          points: 100,
+          preferredRole: formData.skills[0] || 'Contributor',
+          availability: 'Flexible',
+        };
+
+        setDoc(userRef, profileData, { merge: true })
+          .catch(async (err) => {
+            const permissionError = new FirestorePermissionError({
+              path: userRef.path,
+              operation: 'write',
+              requestResourceData: profileData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+          });
+
+        router.push('/dashboard');
+      }
+    } catch (error) {
+      console.error("Error during onboarding finish:", error);
+    } finally {
       setIsSubmitting(false);
-      router.push('/dashboard');
-    }, 1000);
+    }
   };
 
   const renderStep = () => {
