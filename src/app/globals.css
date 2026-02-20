@@ -10,7 +10,7 @@
     --card-foreground: 224 71.4% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
-    --primary: 230 100% 60%; /* Changed from Teal to Indigo */
+    --primary: 230 100% 60%; /* Indigo primary */
     --primary-foreground: 230 100% 98%;
     --secondary: 226 20% 96%;
     --secondary-foreground: 226 40% 20%;
@@ -23,7 +23,7 @@
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 230 100% 60%;
-    --radius: 1rem;
+    --radius: 1.25rem;
   }
 
   .dark {

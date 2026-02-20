@@ -22,19 +22,20 @@ import {
   GraduationCap,
   X,
   Trophy,
-  Layers,
   Database,
-  Cloud,
   Globe,
   Heart,
   Briefcase,
   Shield,
-  Search,
   Cpu,
   Microscope,
   Leaf,
   Megaphone,
-  BarChart3
+  BarChart3,
+  Lightbulb,
+  Music,
+  Video,
+  Scale
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -45,8 +46,8 @@ const INTEREST_CATEGORIES = [
   { id: 'web-dev', label: 'Web Development', icon: <Code className="w-5 h-5" />, image: 'https://picsum.photos/seed/web/400/500' },
   { id: 'app-dev', label: 'App Development', icon: <Smartphone className="w-5 h-5" />, image: 'https://picsum.photos/seed/app/400/350' },
   { id: 'ui-ux', label: 'UI/UX Design', icon: <Palette className="w-5 h-5" />, image: 'https://picsum.photos/seed/design/400/450' },
-  { id: 'startups', label: 'Startups', icon: <Zap className="w-5 h-5" />, image: 'https://picsum.photos/seed/startup/400/300' },
-  { id: 'robotics', label: 'Robotics', icon: <Layers className="w-5 h-5" />, image: 'https://picsum.photos/seed/robot/400/400' },
+  { id: 'startups', icon: <Zap className="w-5 h-5" />, label: 'Startups', image: 'https://picsum.photos/seed/startup/400/300' },
+  { id: 'robotics', label: 'Robotics', icon: <Cpu className="w-5 h-5" />, image: 'https://picsum.photos/seed/robot/400/400' },
   { id: 'blockchain', label: 'Blockchain', icon: <Database className="w-5 h-5" />, image: 'https://picsum.photos/seed/block/400/310' },
   { id: 'data-science', label: 'Data Science', icon: <BarChart3 className="w-5 h-5" />, image: 'https://picsum.photos/seed/data/400/320' },
   { id: 'open-source', label: 'Open Source', icon: <Globe className="w-5 h-5" />, image: 'https://picsum.photos/seed/open/400/330' },
@@ -56,6 +57,10 @@ const INTEREST_CATEGORIES = [
   { id: 'sustainability', label: 'Sustainability', icon: <Leaf className="w-5 h-5" />, image: 'https://picsum.photos/seed/leaf/400/370' },
   { id: 'bio-tech', label: 'BioTech', icon: <Microscope className="w-5 h-5" />, image: 'https://picsum.photos/seed/bio/400/380' },
   { id: 'marketing', label: 'Marketing', icon: <Megaphone className="w-5 h-5" />, image: 'https://picsum.photos/seed/market/400/390' },
+  { id: 'creative-arts', label: 'Creative Arts', icon: <Music className="w-5 h-5" />, image: 'https://picsum.photos/seed/art/400/400' },
+  { id: 'film-video', label: 'Film & Video', icon: <Video className="w-5 h-5" />, image: 'https://picsum.photos/seed/video/400/410' },
+  { id: 'legal-tech', label: 'Legal Tech', icon: <Scale className="w-5 h-5" />, image: 'https://picsum.photos/seed/law/400/420' },
+  { id: 'innovation', label: 'Innovation', icon: <Lightbulb className="w-5 h-5" />, image: 'https://picsum.photos/seed/light/400/430' },
 ];
 
 const TECH_SKILLS = [
@@ -211,7 +216,7 @@ export default function OnboardingFlow() {
               <h3 className="text-2xl font-bold font-headline">Passion Board</h3>
               <p className="text-sm text-muted-foreground">Select your interests and vision areas.</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {INTEREST_CATEGORIES.map((cat) => (
                 <div 
                   key={cat.id} 
@@ -250,7 +255,7 @@ export default function OnboardingFlow() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 py-12">
-      <div className="w-full max-w-4xl space-y-8">
+      <div className="w-full max-w-5xl space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
