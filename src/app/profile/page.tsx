@@ -25,7 +25,8 @@ import {
   ImageIcon,
   X,
   MessageSquare,
-  Quote
+  Quote,
+  Plus
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
