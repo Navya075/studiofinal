@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -11,7 +12,11 @@ import { Plus, X, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 
-export function PostCreationDialog() {
+interface PostCreationDialogProps {
+  onProjectCreated?: (project: any) => void;
+}
+
+export function PostCreationDialog({ onProjectCreated }: PostCreationDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [type, setType] = useState('Hackathon');
@@ -33,14 +38,36 @@ export function PostCreationDialog() {
     }
 
     setIsSubmitting(true);
-    // Simulating mock success without backend
+    
+    // Create new project object
+    const newProject = {
+      id: Math.random().toString(36).substr(2, 9),
+      title,
+      status: 'Active',
+      timeLeft: 'Just now',
+      summary,
+      tags: skills,
+      owner: 'You',
+      members: 1,
+      maxMembers: teamSize,
+      dueDate: duration || 'TBD',
+      category: type === 'Hackathon' || type === 'Startup' ? 'Technical' : 'Non-Technical',
+      type: type,
+      isVerified: false
+    };
+
+    // Simulating success
     setTimeout(() => {
+      onProjectCreated?.(newProject);
       toast({ title: "Success", description: "Your project post is now live!" });
       setOpen(false);
       setIsSubmitting(false);
+      // Reset form
       setTitle('');
       setSummary('');
       setDescription('');
+      setSkills(['React', 'Next.js']);
+      setDuration('');
     }, 800);
   };
 
@@ -106,29 +133,35 @@ export function PostCreationDialog() {
                 </Badge>
               ))}
             </div>
-            <Input placeholder="Type a skill and press Enter" onKeyDown={e => {
-              if (e.key === 'Enter' && e.currentTarget.value) {
-                setSkills([...skills, e.currentTarget.value]);
-                e.currentTarget.value = '';
-              }
-            }} />
+            <Input 
+              placeholder="Type a skill and press Enter" 
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.currentTarget.value) {
+                  e.preventDefault();
+                  if (!skills.includes(e.currentTarget.value)) {
+                    setSkills([...skills, e.currentTarget.value]);
+                  }
+                  e.currentTarget.value = '';
+                }
+              }} 
+            />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Team Size Needed</Label>
-              <Input type="number" value={teamSize} onChange={e => setTeamSize(parseInt(e.target.value))} min={1} />
+              <Input type="number" value={teamSize} onChange={e => setTeamSize(parseInt(e.target.value) || 1)} min={1} />
             </div>
             <div className="space-y-2">
-              <Label>Duration</Label>
-              <Input value={duration} onChange={e => setDuration(e.target.value)} placeholder="e.g. 2 weeks" />
+              <Label>Duration / Due Date</Label>
+              <Input value={duration} onChange={e => setDuration(e.target.value)} placeholder="e.g. Nov 30" />
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+          <div className="flex items-start gap-3 p-4 bg-muted rounded-lg border">
             <ShieldAlert className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong>Confidentiality Notice:</strong> Sensitive details will only be disclosed to accepted members.
+              <strong>Confidentiality Notice:</strong> Sensitive details will only be disclosed to accepted members once they join the team room.
             </p>
           </div>
         </div>

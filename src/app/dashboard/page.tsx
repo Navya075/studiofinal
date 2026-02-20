@@ -87,6 +87,7 @@ const TABS = [
 ];
 
 export default function DashboardPage() {
+  const [projects, setProjects] = useState(MOCK_PROJECTS);
   const [activeTab, setActiveTab] = useState('All Feed');
   const [filterVerified, setFilterVerified] = useState(false);
   const [filterUnverified, setFilterUnverified] = useState(false);
@@ -94,7 +95,7 @@ export default function DashboardPage() {
   const [joinedProjectIds, setJoinedProjectIds] = useState<string[]>(['1']);
 
   const filteredProjects = useMemo(() => {
-    return MOCK_PROJECTS.filter(project => {
+    return projects.filter(project => {
       // Tab Filtering
       if (activeTab === 'Teams') {
         if (!joinedProjectIds.includes(project.id)) return false;
@@ -118,10 +119,14 @@ export default function DashboardPage() {
 
       return true;
     });
-  }, [activeTab, filterVerified, filterUnverified, searchQuery, joinedProjectIds]);
+  }, [projects, activeTab, filterVerified, filterUnverified, searchQuery, joinedProjectIds]);
 
   const handleJoinSuccess = (projectId: string) => {
     setJoinedProjectIds(prev => [...prev, projectId]);
+  };
+
+  const handleCreateProject = (newProject: any) => {
+    setProjects(prev => [newProject, ...prev]);
   };
 
   const resetFilters = () => {
@@ -136,7 +141,7 @@ export default function DashboardPage() {
       <Navbar isDashboard />
       
       <main className="max-w-6xl mx-auto px-4 py-12">
-        {/* Header Row (First Section) */}
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="space-y-1">
             <h1 className="text-4xl font-bold font-headline tracking-tight text-foreground">
@@ -144,61 +149,34 @@ export default function DashboardPage() {
             </h1>
             <p className="text-muted-foreground text-lg">Find your next project or build a winning team.</p>
           </div>
-          <PostCreationDialog />
+          <PostCreationDialog onProjectCreated={handleCreateProject} />
         </div>
 
-        {/* Search Bar (Second Section) */}
-        <div className="mb-10">
-          <div className="relative group w-full">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+        {/* Search & Filter Row */}
+        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-10 w-full">
+          <div className="relative group flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
               type="text"
               placeholder="Search projects, skills, or tags..."
-              className="pl-16 h-16 bg-white border-muted/30 rounded-full shadow-soft focus-visible:ring-primary/20 w-full text-lg transition-all hover:border-primary/30"
+              className="pl-12 h-12 bg-white border-muted/30 rounded-full shadow-soft focus-visible:ring-primary/20 w-full text-base transition-all hover:border-primary/30"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')} 
-                className="absolute right-6 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
-        </div>
-
-        {/* Tabs and Filter Row (Third Section) */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-10 w-full">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 flex-1 no-scrollbar">
-            {TABS.map(tab => (
-              <Button
-                key={tab.id}
-                variant="ghost"
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "rounded-full h-11 px-5 text-sm font-semibold transition-all gap-2 shrink-0",
-                  activeTab === tab.id 
-                    ? "bg-primary/10 text-primary hover:bg-primary/20" 
-                    : "text-muted-foreground hover:bg-muted"
-                )}
-              >
-                {tab.icon} {tab.label}
-              </Button>
-            ))}
-          </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {(filterVerified || filterUnverified || searchQuery) && (
-              <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs h-9 gap-1.5 text-muted-foreground hover:text-primary hidden sm:flex">
-                <RotateCcw className="w-3.5 h-3.5" /> Reset
-              </Button>
-            )}
-            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-11 w-11 rounded-full border-muted/30 shadow-sm hover:border-primary transition-all">
+                <Button variant="outline" size="icon" className="h-12 w-12 rounded-full border-muted/30 shadow-sm hover:border-primary transition-all bg-white">
                   <Filter className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
@@ -222,6 +200,30 @@ export default function DashboardPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
+
+        {/* Tabs Row */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-4 mb-10 no-scrollbar">
+          {TABS.map(tab => (
+            <Button
+              key={tab.id}
+              variant="ghost"
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "rounded-full h-11 px-5 text-sm font-semibold transition-all gap-2 shrink-0",
+                activeTab === tab.id 
+                  ? "bg-primary/10 text-primary hover:bg-primary/20" 
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+            >
+              {tab.icon} {tab.label}
+            </Button>
+          ))}
+          {(filterVerified || filterUnverified || searchQuery) && (
+            <Button variant="ghost" size="sm" onClick={resetFilters} className="text-xs h-9 gap-1.5 text-muted-foreground hover:text-primary ml-auto hidden sm:flex">
+              <RotateCcw className="w-3.5 h-3.5" /> Reset All
+            </Button>
+          )}
         </div>
 
         {/* Content Feed */}
