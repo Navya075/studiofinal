@@ -119,13 +119,17 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState(MOCK_PROJECTS);
   const [sessions, setSessions] = useState(MOCK_SESSIONS);
 
+  const generateMeetId = () => {
+    const part = (len: number) => Math.random().toString(36).substring(2, 2 + len);
+    return `${part(3)}-${part(4)}-${part(3)}`;
+  };
+
   const handleJoinProject = (id: string) => {
     setJoinedIds(prev => [...prev, id]);
   };
 
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
-      // Tab Filtering
       if (activeTab === 'Teams') {
         if (!joinedIds.includes(project.id)) return false;
       } else if (activeTab === 'Learn') {
@@ -134,15 +138,12 @@ export default function DashboardPage() {
         if (project.category !== activeTab) return false;
       }
 
-      // Search Filtering
       const matchesSearch = 
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
 
       if (!matchesSearch) return false;
-
-      // Verification Filtering
       if (filterVerified && !project.isVerified) return false;
 
       return true;
@@ -182,7 +183,7 @@ export default function DashboardPage() {
       id: `s${Date.now()}`,
       instructor: 'You',
       attendees: 0,
-      meetLink: `meet.google.com/${Math.random().toString(36).substring(7)}`
+      meetLink: `meet.google.com/${generateMeetId()}`
     };
     setSessions([session, ...sessions]);
   };
@@ -192,7 +193,6 @@ export default function DashboardPage() {
       <Navbar isDashboard />
       
       <main className="max-w-6xl mx-auto px-4 py-12">
-        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="space-y-1">
             <h1 className="text-4xl font-bold font-headline tracking-tight text-foreground">
@@ -209,7 +209,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Search Bar Row */}
         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6 w-full">
           <div className="relative group flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -244,7 +243,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Simplified Tabs Row */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-4 mb-10 no-scrollbar">
           {TABS.map(tab => (
             <Button
@@ -268,7 +266,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Content Feed */}
         <div className="grid grid-cols-1 gap-6">
           {activeTab === 'Learn' ? (
              filteredSessions.length > 0 ? (

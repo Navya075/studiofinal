@@ -22,6 +22,14 @@ interface LearnCardProps {
   };
 }
 
+const ensureAbsoluteUrl = (url: string) => {
+  if (!url) return '#';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `https://${url}`;
+};
+
 export function LearnCard({ session }: LearnCardProps) {
   const [isRegistered, setIsRegistered] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -75,7 +83,8 @@ export function LearnCard({ session }: LearnCardProps) {
       });
       return;
     }
-    window.open(`https://${session.meetLink}`, '_blank');
+    const finalUrl = ensureAbsoluteUrl(session.meetLink);
+    window.open(finalUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (

@@ -39,6 +39,14 @@ const GOOGLE_CAL_EVENTS = [
   { id: 'g2', title: 'Campus Tech Meetup', date: 'Oct 28, 2024', status: 'Google Cal', color: 'bg-green-500', source: 'Google' },
 ];
 
+const ensureAbsoluteUrl = (url: string) => {
+  if (!url) return '#';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `https://${url}`;
+};
+
 export default function TeamRoomPage() {
   const params = useParams();
   const projectId = params?.id as string;
@@ -55,17 +63,16 @@ export default function TeamRoomPage() {
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [meetLink, setMeetLink] = useState<string | null>(null);
   
-  // Google Calendar States
   const [isCalendarSynced, setIsCalendarSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [tasks, setTasks] = useState(INITIAL_TASKS);
 
   useEffect(() => {
-    // Mock "unique" Meet link generation
-    const randomId = Math.random().toString(36).substring(2, 5) + '-' + 
-                     Math.random().toString(36).substring(2, 6) + '-' + 
-                     Math.random().toString(36).substring(2, 5);
-    setMeetLink(`meet.google.com/${randomId}`);
+    const generateMeetId = () => {
+      const part = (len: number) => Math.random().toString(36).substring(2, 2 + len);
+      return `${part(3)}-${part(4)}-${part(3)}`;
+    };
+    setMeetLink(`meet.google.com/${generateMeetId()}`);
   }, [projectId]);
 
   const handleSyncGoogleCalendar = () => {
@@ -201,7 +208,7 @@ export default function TeamRoomPage() {
 
                 <div className="flex flex-col gap-4">
                   <Button className="h-16 rounded-2xl bg-primary text-white font-black uppercase tracking-widest text-lg shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all group" asChild>
-                    <a href={`https://${meetLink}`} target="_blank" rel="noopener noreferrer">
+                    <a href={ensureAbsoluteUrl(meetLink || '')} target="_blank" rel="noopener noreferrer">
                       Launch Google Meet <ExternalLink className="ml-3 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     </a>
                   </Button>
