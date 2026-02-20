@@ -1,0 +1,22 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-collab",
+      "description": "Diverse students working together on laptops",
+      "imageUrl": "https://images.unsplash.com/photo-1758270704763-22072a90d3b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjYW1wdXMlMjBjb2xsYWJvcmF0aW9ufGVufDB8fHx8MTc3MTU3OTIyN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "campus collaboration"
+    },
+    {
+      "id": "profile-1",
+      "description": "Student profile placeholder",
+      "imageUrl": "https://images.unsplash.com/photo-1619431667975-e93b820cde63?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzdHVkZW50JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzcxNTU1NTQ4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "student portrait"
+    },
+    {
+      "id": "project-1",
+      "description": "Project concept art",
+      "imageUrl": "https://images.unsplash.com/photo-1760531932521-8eb5a064dbca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx0ZWNobm9sb2d5JTIwcHJvamVjdHxlbnwwfHx8fDE3NzE1NzkyMjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "technology project"
+    }
+  ]
+}

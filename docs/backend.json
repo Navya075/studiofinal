@@ -1,0 +1,99 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Comprehensive student profile including education and skills.",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "university": { "type": "string" },
+        "degree": { "type": "string" },
+        "major": { "type": "string" },
+        "graduationYear": { "type": "string" },
+        "bio": { "type": "string" },
+        "rating": { "type": "number", "description": "Average peer rating out of 5" },
+        "points": { "type": "number", "description": "Total collaboration points earned" },
+        "skills": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "interests": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "preferredRole": { "type": "string" },
+        "availability": { "type": "string" }
+      },
+      "required": ["fullName", "email", "university", "major"]
+    },
+    "Project": {
+      "title": "Project Post",
+      "description": "A collaboration project looking for team members.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "enum": ["Hackathon", "Research", "Startup", "Competition", "General Collaboration", "Club Project"] },
+        "summary": { "type": "string" },
+        "description": { "type": "string" },
+        "isVerified": { "type": "boolean", "description": "Whether the post is from a verified club" },
+        "status": { "type": "string", "enum": ["Active", "Completed"] },
+        "requiredSkills": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "teamSize": { "type": "number" },
+        "duration": { "type": "string" },
+        "ownerId": { "type": "string" }
+      }
+    },
+    "PeerReview": {
+      "title": "Peer Review",
+      "description": "Feedback given to a teammate after project completion.",
+      "type": "object",
+      "properties": {
+        "reviewerId": { "type": "string" },
+        "revieweeId": { "type": "string" },
+        "projectId": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "pointsAwarded": { "type": "number" }
+      }
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System or user alerts for the student.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "enum": ["info", "success", "alert", "message"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" },
+        "link": { "type": "string" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["password", "google"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "#/backend/entities/UserProfile",
+      "description": "Student profiles"
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": "#/backend/entities/Notification",
+      "description": "User specific alerts and notifications"
+    },
+    "/projects/{projectId}": {
+      "schema": "#/backend/entities/Project",
+      "description": "Project collaboration posts"
+    },
+    "/projects/{projectId}/reviews": {
+      "schema": "#/backend/entities/PeerReview",
+      "description": "Post-project teammate reviews"
+    }
+  }
+}

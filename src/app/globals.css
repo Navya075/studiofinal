@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 226 40% 98%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 230 100% 60%; /* Changed from Teal to Indigo */
+    --primary-foreground: 230 100% 98%;
+    --secondary: 226 20% 96%;
+    --secondary-foreground: 226 40% 20%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 230 100% 60%;
+    --accent-foreground: 230 100% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 230 100% 60%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 230 25% 7%;
+    --foreground: 210 20% 98%;
+    --card: 230 25% 10%;
+    --card-foreground: 210 20% 98%;
+    --popover: 230 25% 8%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 230 100% 60%;
+    --primary-foreground: 230 100% 10%;
+    --secondary: 215 27.9% 12%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 15%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 230 100% 60%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 18%;
+    --input: 215 27.9% 18%;
+    --ring: 230 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline tracking-tight;
+  }
+}
+
+.glass {
+  @apply bg-background/80 backdrop-blur-md border border-white/5;
+}
+
+.shadow-soft {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted/20 rounded-full hover:bg-muted/40;
+}
