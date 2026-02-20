@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,8 @@ import {
   Camera,
   Layers,
   Grid,
-  Check
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { doc, setDoc } from 'firebase/firestore';
@@ -35,6 +36,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { initializeFirebase, useUser } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { toast } from '@/hooks/use-toast';
 
 const INTEREST_CATEGORIES = [
   { id: 'hackathons', label: 'Hackathons', icon: <Rocket className="w-5 h-5" />, image: 'https://picsum.photos/seed/hack/400/300' },
@@ -112,9 +114,29 @@ export default function OnboardingFlow() {
 
     try {
       let currentUser = user;
+      
+      // Attempt anonymous sign in if no user exists
       if (!currentUser) {
-        const cred = await signInAnonymously(auth);
-        currentUser = cred.user;
+        try {
+          const cred = await signInAnonymously(auth);
+          currentUser = cred.user;
+        } catch (authError: any) {
+          if (authError.code === 'auth/api-key-not-valid') {
+            toast({
+              variant: "destructive",
+              title: "Firebase Config Error",
+              description: "The API key in src/firebase/config.ts is invalid. Please update it with your actual key from the Firebase Console.",
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Authentication Failed",
+              description: authError.message || "Could not sign in. Please check your internet connection.",
+            });
+          }
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       if (currentUser) {
@@ -129,6 +151,9 @@ export default function OnboardingFlow() {
         };
 
         setDoc(userRef, profileData, { merge: true })
+          .then(() => {
+            router.push('/dashboard');
+          })
           .catch(async (err) => {
             const permissionError = new FirestorePermissionError({
               path: userRef.path,
@@ -137,11 +162,14 @@ export default function OnboardingFlow() {
             });
             errorEmitter.emit('permission-error', permissionError);
           });
-
-        router.push('/dashboard');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during onboarding finish:", error);
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: error.message || "An unexpected error occurred during onboarding.",
+      });
     } finally {
       setIsSubmitting(false);
     }
