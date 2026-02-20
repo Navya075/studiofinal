@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { TeamSidebar } from '@/components/team/TeamSidebar';
 import { Button } from '@/components/ui/button';
@@ -9,14 +9,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Send, Plus, Paperclip, Smile, Mic, MicOff, Video, VideoOff, 
-  PhoneOff, ScreenShare, Calendar as CalendarIcon, MoreVertical, 
-  Search, File, Download, ExternalLink, Clock, CheckCircle2, 
-  Star, Trophy, Award, RefreshCw, Globe, Loader2, LayoutGrid, Hand, MessageSquare, UserPlus, Shield
+  PhoneOff, ScreenShare, MoreVertical, Search, File, Download, 
+  RefreshCw, Globe, CheckCircle2, Award, Star, Chrome, ExternalLink,
+  MessageSquare, UserPlus, LayoutGrid, Hand
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { MOCK_PROJECTS } from '@/app/dashboard/page';
 import { cn } from '@/lib/utils';
@@ -53,11 +53,20 @@ export default function TeamRoomPage() {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [meetLink, setMeetLink] = useState<string | null>(null);
   
   // Google Calendar States
   const [isCalendarSynced, setIsCalendarSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [tasks, setTasks] = useState(INITIAL_TASKS);
+
+  useEffect(() => {
+    // Mock "unique" Meet link generation
+    const randomId = Math.random().toString(36).substring(2, 5) + '-' + 
+                     Math.random().toString(36).substring(2, 6) + '-' + 
+                     Math.random().toString(36).substring(2, 5);
+    setMeetLink(`meet.google.com/${randomId}`);
+  }, [projectId]);
 
   const handleSyncGoogleCalendar = () => {
     setIsSyncing(true);
@@ -163,6 +172,64 @@ export default function TeamRoomPage() {
             </div>
           </div>
         );
+      case 'video':
+        return (
+          <div className="h-full bg-[#1a1c1e] flex flex-col items-center justify-center p-8 animate-in zoom-in duration-500 overflow-hidden text-white">
+            <div className="max-w-2xl w-full text-center space-y-12">
+              <div className="relative inline-block">
+                <div className="absolute -inset-10 bg-primary/20 blur-[100px] rounded-full animate-pulse" />
+                <div className="w-32 h-32 bg-white/5 backdrop-blur-xl border-4 border-white/10 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl relative z-10">
+                  <Video className="w-16 h-16 text-primary" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-5xl font-black font-headline tracking-tighter">Initiate Video Sync</h2>
+                <p className="text-white/60 text-lg max-w-md mx-auto leading-relaxed">
+                  Collaborate in real-time with your team using <span className="text-white font-bold underline decoration-primary decoration-4">Google Meet</span>.
+                </p>
+              </div>
+
+              <Card className="bg-white/5 border-white/10 backdrop-blur-md rounded-[2.5rem] p-8 space-y-8 shadow-2xl">
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Your Unique Session Link</p>
+                  <div className="flex items-center justify-center gap-3 bg-black/40 py-4 px-6 rounded-2xl border border-white/5 font-mono text-primary font-bold">
+                    <Chrome className="w-4 h-4" />
+                    {meetLink || 'Generating link...'}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <Button className="h-16 rounded-2xl bg-primary text-white font-black uppercase tracking-widest text-lg shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all group" asChild>
+                    <a href={`https://${meetLink}`} target="_blank" rel="noopener noreferrer">
+                      Launch Google Meet <ExternalLink className="ml-3 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </a>
+                  </Button>
+                  <div className="flex items-center justify-center gap-8 pt-4">
+                    <button className="flex items-center gap-2 text-xs font-bold text-white/40 hover:text-white transition-colors uppercase tracking-widest">
+                      <Mic className="w-4 h-4" /> MIC SETTINGS
+                    </button>
+                    <button className="flex items-center gap-2 text-xs font-bold text-white/40 hover:text-white transition-colors uppercase tracking-widest">
+                      <Video className="w-4 h-4" /> CAM SETTINGS
+                    </button>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="flex -space-x-4 items-center justify-center">
+                {TEAM_MEMBERS.map((member, i) => (
+                  <Avatar key={member.id} className="w-12 h-12 border-4 border-[#1a1c1e] shadow-xl">
+                    <AvatarImage src={member.image} />
+                    <AvatarFallback>{member.name[0]}</AvatarFallback>
+                  </Avatar>
+                ))}
+                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-black border-4 border-[#1a1c1e] text-white/40">
+                  +3
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       case 'files':
         return (
           <div className="p-8 space-y-8 animate-in fade-in duration-300 max-w-6xl mx-auto">
@@ -200,105 +267,6 @@ export default function TeamRoomPage() {
                   </Card>
                 ))}
              </div>
-          </div>
-        );
-      case 'video':
-        return (
-          <div className="h-full bg-[#202124] flex flex-col animate-in zoom-in duration-500 overflow-hidden">
-            {/* Meet Header */}
-            <header className="p-4 flex items-center justify-between text-white/90">
-              <div className="flex items-center gap-4">
-                <span className="font-bold tracking-tight text-lg">{project.title} - Video Sync</span>
-                <div className="h-4 w-[1px] bg-white/20" />
-                <span className="text-sm font-medium opacity-60">10:45 AM | {projectId}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full"><LayoutGrid className="w-5 h-5" /></Button>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full"><UserPlus className="w-5 h-5" /></Button>
-              </div>
-            </header>
-
-            {/* Video Grid */}
-            <div className="flex-1 p-4 overflow-hidden">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 h-full max-w-7xl mx-auto">
-                {TEAM_MEMBERS.map((member, i) => (
-                  <div key={member.id} className="relative bg-[#3c4043] rounded-2xl overflow-hidden aspect-video border border-white/5 flex items-center justify-center group shadow-xl">
-                    <img 
-                      src={`https://picsum.photos/seed/${member.id}/800/600`} 
-                      alt={member.name} 
-                      className={cn(
-                        "w-full h-full object-cover transition-all duration-700",
-                        i === 0 && isVideoOff ? "opacity-0" : "opacity-80"
-                      )} 
-                    />
-                    
-                    {/* Avatar Fallback for Off Video */}
-                    {(i === 0 && isVideoOff) && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Avatar className="w-24 h-24 border-4 border-white/10 bg-primary/20">
-                          <AvatarFallback className="text-4xl font-bold text-white">{member.name[0]}</AvatarFallback>
-                        </Avatar>
-                      </div>
-                    )}
-
-                    <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full">
-                       <span className="text-xs font-bold text-white">{member.name} {i === 0 && "(You)"}</span>
-                       {(i === 1 || (i === 0 && isMuted)) && <MicOff className="w-3.5 h-3.5 text-red-400" />}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Meet Controls Bar */}
-            <footer className="p-6 flex items-center justify-center gap-4 bg-[#202124]">
-              <div className="flex items-center gap-4">
-                <Button 
-                  onClick={() => setIsMuted(!isMuted)} 
-                  className={cn(
-                    "w-12 h-12 rounded-full transition-all",
-                    isMuted ? "bg-red-500 hover:bg-red-600" : "bg-white/10 hover:bg-white/20 text-white"
-                  )}
-                >
-                  {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                </Button>
-                <Button 
-                  onClick={() => setIsVideoOff(!isVideoOff)} 
-                  className={cn(
-                    "w-12 h-12 rounded-full transition-all",
-                    isVideoOff ? "bg-red-500 hover:bg-red-600" : "bg-white/10 hover:bg-white/20 text-white"
-                  )}
-                >
-                  {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
-                </Button>
-                
-                <div className="w-[1px] h-8 bg-white/10 mx-2" />
-                
-                <Button 
-                  variant="ghost" 
-                  className={cn(
-                    "w-12 h-12 rounded-full hover:bg-white/10 text-white",
-                    isScreenSharing && "bg-primary/20 text-primary hover:bg-primary/30"
-                  )}
-                  onClick={() => setIsScreenSharing(!isScreenSharing)}
-                >
-                  <ScreenShare className="w-5 h-5" />
-                </Button>
-                <Button variant="ghost" className="w-12 h-12 rounded-full hover:bg-white/10 text-white"><Hand className="w-5 h-5" /></Button>
-                <Button variant="ghost" className="w-12 h-12 rounded-full hover:bg-white/10 text-white"><Smile className="w-5 h-5" /></Button>
-                <Button variant="ghost" className="w-12 h-12 rounded-full hover:bg-white/10 text-white"><MoreVertical className="w-5 h-5" /></Button>
-                
-                <div className="w-[1px] h-8 bg-white/10 mx-2" />
-
-                <Button 
-                  variant="destructive" 
-                  className="w-16 h-12 rounded-full shadow-xl shadow-destructive/20 gap-2 font-bold" 
-                  onClick={() => setActiveTab('chat')}
-                >
-                  <PhoneOff className="w-5 h-5" /> Leave
-                </Button>
-              </div>
-            </footer>
           </div>
         );
       case 'calendar':
