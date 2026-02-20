@@ -9,7 +9,6 @@
         "fullName": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "university": { "type": "string" },
-        "major": { "type": "string" },
         "graduationYear": { "type": "string" },
         "bio": { "type": "string" },
         "rating": { "type": "number", "description": "Average peer rating out of 5" },
@@ -26,7 +25,7 @@
         "preferredRole": { "type": "string" },
         "availability": { "type": "string" }
       },
-      "required": ["fullName", "email", "university", "major"]
+      "required": ["fullName", "email", "university"]
     },
     "Project": {
       "title": "Project Post",
@@ -37,7 +36,7 @@
         "type": { "enum": ["Hackathon", "Research", "Startup", "Competition", "General Collaboration", "Club Project"] },
         "summary": { "type": "string" },
         "description": { "type": "string" },
-        "isVerified": { "type": "boolean", "description": "Whether the post is from a verified club" },
+        "isVerified": { "boolean": "boolean", "description": "Whether the post is from a verified club" },
         "status": { "type": "string", "enum": ["Active", "Completed"] },
         "requiredSkills": {
           "type": "array",

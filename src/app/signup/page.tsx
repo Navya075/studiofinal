@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -100,7 +101,6 @@ export default function OnboardingFlow() {
       fullName: 'John Doe',
       email: 'john@university.edu',
       university: 'Stanford University',
-      major: 'Computer Science',
       skills,
       interests,
       points: 100,
@@ -203,14 +203,10 @@ export default function OnboardingFlow() {
                 <GraduationCap className="w-5 h-5" />
                 <span>Academic Verification</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                 <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-widest text-muted-foreground">University</Label>
                   <Input placeholder="University Name" defaultValue="Stanford University" className="h-11 rounded-xl" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">Major</Label>
-                  <Input placeholder="e.g. Computer Science" defaultValue="Computer Science" className="h-11 rounded-xl" />
                 </div>
               </div>
             </div>
@@ -264,7 +260,12 @@ export default function OnboardingFlow() {
               <p className="text-muted-foreground text-lg">You've earned 100 Collab Points for joining the ecosystem.</p>
             </div>
             <div className="flex gap-2 pt-4">
-              {[1, 2, 3].map(i => <Star key={i} className="w-8 h-8 text-yellow-500 fill-yellow-500 animate-bounce" style={{ animationDelay: `${i * 0.2}s` }} />)}
+              {[1, 2, 3, 4, 5].map(i => (
+                <Star 
+                  key={i} 
+                  className={cn("w-6 h-6", i <= 4 ? "text-yellow-500 fill-yellow-500" : "text-muted/30")} 
+                />
+              ))}
             </div>
           </div>
         );

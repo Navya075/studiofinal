@@ -32,13 +32,12 @@ import {
   Verified
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { PlaceHolderImages } from '@/placeholder-images';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const MOCK_USER = {
   fullName: "John Doe",
   email: "john.doe@university.edu",
   university: "Stanford University",
-  major: "Computer Science",
   graduationYear: "2026",
   bio: "Passionate about building scalable web applications and exploring the future of blockchain and AI. Always looking for innovative hackathon teams.",
   points: 2450,
@@ -249,10 +248,6 @@ export default function ProfilePage() {
                 )}
               </div>
               <div className="flex flex-wrap items-center justify-center gap-4">
-                <div className="flex items-center gap-2 text-primary font-bold text-xl">
-                  <GraduationCap className="w-7 h-7" />
-                  <span>{userData.major} Student</span>
-                </div>
                 {userData.isEducator && (
                   <Badge className="bg-primary text-white border-primary/20 px-5 py-2 rounded-full font-black text-xs shadow-lg shadow-primary/20 gap-2">
                     <BookOpen className="w-4 h-4" /> VERIFIED EDUCATOR
