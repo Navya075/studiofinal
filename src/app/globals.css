@@ -4,48 +4,48 @@
 
 @layer base {
   :root {
-    --background: 30 30% 98%; /* Soft Cream */
-    --foreground: 25 30% 15%; /* Dark Coffee Brown */
+    --background: 40 30% 98%; /* Warm Cream */
+    --foreground: 265 30% 15%; /* Deep Purple-Grey Text */
     --card: 0 0% 100%;
-    --card-foreground: 25 30% 15%;
+    --card-foreground: 265 30% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 25 30% 15%;
-    --primary: 25 35% 25%; /* Rich Earthy Brown */
-    --primary-foreground: 30 30% 98%;
-    --secondary: 30 20% 94%; /* Warm Taupe */
-    --secondary-foreground: 25 40% 20%;
-    --muted: 30 10% 96%;
-    --muted-foreground: 25 15% 45%;
-    --accent: 25 35% 25%;
-    --accent-foreground: 30 30% 98%;
+    --popover-foreground: 265 30% 15%;
+    --primary: 265 60% 40%; /* Royal Purple */
+    --primary-foreground: 40 30% 98%;
+    --secondary: 265 20% 94%; /* Soft Lavender */
+    --secondary-foreground: 265 50% 20%;
+    --muted: 265 10% 96%;
+    --muted-foreground: 265 15% 45%;
+    --accent: 265 60% 40%;
+    --accent-foreground: 40 30% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 20% 98%;
-    --border: 30 15% 88%;
-    --input: 30 15% 88%;
-    --ring: 25 35% 25%;
+    --border: 265 15% 88%;
+    --input: 265 15% 88%;
+    --ring: 265 60% 40%;
     --radius: 1.25rem;
   }
 
   .dark {
-    --background: 25 25% 10%; /* Deep Roasted Brown */
-    --foreground: 30 30% 98%;
-    --card: 25 20% 12%;
-    --card-foreground: 30 30% 98%;
-    --popover: 25 20% 12%;
-    --popover-foreground: 30 30% 98%;
-    --primary: 30 40% 65%; /* Lighter Warm Brown */
-    --primary-foreground: 25 25% 10%;
-    --secondary: 25 20% 18%;
-    --secondary-foreground: 30 30% 98%;
-    --muted: 25 20% 18%;
-    --muted-foreground: 25 10% 65%;
-    --accent: 30 40% 65%;
-    --accent-foreground: 25 25% 10%;
+    --background: 265 40% 5%; /* Deep Midnight Purple */
+    --foreground: 40 30% 98%;
+    --card: 265 30% 8%;
+    --card-foreground: 40 30% 98%;
+    --popover: 265 30% 8%;
+    --popover-foreground: 40 30% 98%;
+    --primary: 265 50% 65%; /* Light Vibrant Purple */
+    --primary-foreground: 265 40% 5%;
+    --secondary: 265 30% 12%;
+    --secondary-foreground: 40 30% 98%;
+    --muted: 265 30% 12%;
+    --muted-foreground: 265 10% 65%;
+    --accent: 265 50% 65%;
+    --accent-foreground: 265 40% 5%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 20% 98%;
-    --border: 25 20% 20%;
-    --input: 25 20% 20%;
-    --ring: 30 40% 65%;
+    --border: 265 30% 15%;
+    --input: 265 30% 15%;
+    --ring: 265 50% 65%;
   }
 }
 
