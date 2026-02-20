@@ -84,7 +84,7 @@ export default function ProfilePage() {
         <div className="max-w-6xl mx-auto px-4 relative h-full">
           {/* Centered Avatar */}
           <div className="absolute -bottom-20 left-1/2 -translate-x-1/2">
-            <Avatar className="w-32 h-32 md:w-44 md:h-44 border-8 border-background shadow-2xl">
+            <Avatar className="w-36 h-36 md:w-44 md:h-44 border-8 border-background shadow-2xl">
               <AvatarImage src={`https://picsum.photos/seed/${userData.fullName}/200/200`} />
               <AvatarFallback className="bg-primary text-white text-3xl font-bold">
                 {userData.fullName.split(' ').map((n: string) => n[0]).join('')}
@@ -94,32 +94,34 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 pt-24 pb-12">
-        <div className="flex flex-col items-center text-center space-y-8">
-          {/* Identity Section */}
-          <div className="space-y-4 max-w-2xl">
-            <div>
-              <h1 className="text-4xl font-bold font-headline tracking-tight">{userData.fullName}</h1>
-              <p className="text-primary font-bold text-lg flex items-center justify-center gap-2 mt-1">
+      <main className="max-w-6xl mx-auto px-4 pt-28 pb-12">
+        <div className="flex flex-col items-center space-y-12">
+          
+          {/* Identity Section - Centered and Tightened */}
+          <div className="flex flex-col items-center text-center space-y-6 max-w-3xl w-full">
+            <div className="space-y-2">
+              <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight text-foreground">{userData.fullName}</h1>
+              <div className="flex items-center justify-center gap-2 text-primary font-bold text-lg">
                 <GraduationCap className="w-5 h-5" />
-                {userData.major} Student
-              </p>
+                <span>{userData.major} Student</span>
+              </div>
             </div>
 
-            {/* Profile Link Display */}
-            <div className="flex items-center justify-center gap-2 bg-muted/50 px-4 py-2 rounded-full border border-muted-foreground/10 group">
-              <LinkIcon className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">campusconnect.app/u/{userData.username || 'johndoe'}</span>
+            {/* Profile Link Display - Centered Container */}
+            <div className="flex items-center justify-center gap-2 bg-muted/50 px-5 py-2.5 rounded-full border border-muted-foreground/10 transition-all hover:bg-muted/70">
+              <LinkIcon className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">campusconnect.app/u/{userData.username || 'johndoe'}</span>
               <button 
                 onClick={handleCopyLink}
-                className="ml-2 p-1 hover:bg-background rounded-md transition-colors text-muted-foreground hover:text-primary"
+                className="ml-2 p-1.5 hover:bg-background rounded-md transition-colors text-muted-foreground hover:text-primary"
                 title="Copy profile link"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground font-medium pt-2">
+            {/* Contact Details Grid-like Row */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground font-medium">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-primary/60" />
                 <span>{userData.university}</span>
@@ -134,50 +136,76 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <p className="text-sm leading-relaxed text-muted-foreground bg-muted/30 p-6 rounded-3xl italic border border-muted/50 mx-auto">
-              "{userData.bio || 'Building the future of campus collaboration.'}"
-            </p>
+            {/* Bio Block */}
+            <div className="relative w-full">
+              <p className="text-base leading-relaxed text-muted-foreground bg-white p-8 rounded-[2.5rem] italic border shadow-sm max-w-2xl mx-auto">
+                "{userData.bio || 'Building the future of campus collaboration.'}"
+              </p>
+            </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-              <Button className="rounded-xl h-11 px-8 font-bold bg-primary text-white shadow-lg shadow-primary/20" asChild>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-5 pt-2">
+              <Button className="rounded-2xl h-12 px-10 font-bold bg-primary text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all" asChild>
                 <Link href="/settings">Edit Profile</Link>
               </Button>
-              <Button variant="link" className="text-muted-foreground hover:text-primary font-bold gap-1.5" asChild>
-                <Link href="https://github.com" target="_blank">
-                  GitHub <ExternalLink className="w-3.5 h-3.5" />
-                </Link>
-              </Button>
-              <Button variant="link" className="text-muted-foreground hover:text-primary font-bold gap-1.5" asChild>
-                <Link href="https://linkedin.com" target="_blank">
-                  LinkedIn <ExternalLink className="w-3.5 h-3.5" />
-                </Link>
-              </Button>
+              <div className="flex items-center gap-6">
+                <Button variant="link" className="text-muted-foreground hover:text-primary font-bold gap-2 p-0 h-auto" asChild>
+                  <Link href="https://github.com" target="_blank">
+                    GitHub <ExternalLink className="w-4 h-4" />
+                  </Link>
+                </Button>
+                <Button variant="link" className="text-muted-foreground hover:text-primary font-bold gap-2 p-0 h-auto" asChild>
+                  <Link href="https://linkedin.com" target="_blank">
+                    LinkedIn <ExternalLink className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 w-full text-left">
-            {/* Left Column - Stats */}
-            <div className="lg:col-span-4 space-y-6">
-              <Card className="border-none shadow-soft overflow-hidden bg-white/50 backdrop-blur-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-hackathon" /> Achievements
+          {/* Detailed Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 w-full">
+            
+            {/* Left Column - Stats & Highlights */}
+            <div className="lg:col-span-4 space-y-8">
+              <Card className="border-none shadow-soft overflow-hidden bg-white/60 backdrop-blur-sm rounded-3xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-hackathon" /> Performance Metrics
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white rounded-2xl border shadow-sm group hover:border-primary/30 transition-all">
-                    <div className="space-y-0.5">
-                      <div className="text-xl font-black text-primary">{userData.points || 0}</div>
+                  <div className="flex items-center justify-between p-5 bg-white rounded-2xl border shadow-sm group hover:border-primary/40 transition-all">
+                    <div className="space-y-1">
+                      <div className="text-2xl font-black text-primary leading-none">{userData.points || 0}</div>
                       <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Collab Points</div>
                     </div>
-                    <Badge className="bg-primary/10 text-primary border-primary/20 px-3 py-1 font-bold">Top 5%</Badge>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 px-3 py-1 font-bold rounded-lg text-[10px]">TOP 5%</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white rounded-2xl border shadow-sm group hover:border-creative/30 transition-all">
-                    <div className="space-y-0.5">
-                      <div className="text-xl font-black text-creative">3</div>
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Projects Joined</div>
+                  <div className="flex items-center justify-between p-5 bg-white rounded-2xl border shadow-sm group hover:border-creative/40 transition-all">
+                    <div className="space-y-1">
+                      <div className="text-2xl font-black text-creative leading-none">3</div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Active Teams</div>
                     </div>
-                    <Badge className="bg-creative/10 text-creative border-creative/20 px-3 py-1 font-bold">Active</Badge>
+                    <Badge className="bg-creative/10 text-creative border-creative/20 px-3 py-1 font-bold rounded-lg text-[10px]">ENGAGED</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Interests Summary */}
+              <Card className="border-none shadow-soft bg-white/60 backdrop-blur-sm rounded-3xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Star className="w-4 h-4 text-creative" /> Vision Areas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {userData.interests?.map((interest: string, i: number) => (
+                      <Badge key={i} variant="secondary" className="bg-white border text-xs py-1.5 px-3 rounded-xl font-semibold">
+                        {interest}
+                      </Badge>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -185,13 +213,16 @@ export default function ProfilePage() {
 
             {/* Right Column - Skills & Projects */}
             <div className="lg:col-span-8 space-y-12">
+              
               {/* Skills Section */}
               <section className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
-                    <Award className="w-6 h-6 text-primary" /> Domain Expertise
+                <div className="flex items-center justify-between border-b pb-4">
+                  <h2 className="text-2xl font-bold font-headline flex items-center gap-3">
+                    <Award className="w-7 h-7 text-primary" /> Domain Expertise
                   </h2>
-                  <Button variant="link" className="text-primary text-xs font-bold uppercase tracking-widest p-0 h-auto">Update Skills</Button>
+                  <Button variant="ghost" className="text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary/5">
+                    Update Skills
+                  </Button>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {userData.skills?.length > 0 ? (
@@ -199,7 +230,7 @@ export default function ProfilePage() {
                       <Badge 
                         key={i} 
                         variant="outline" 
-                        className="px-5 py-3 text-sm rounded-2xl border-2 border-primary/10 text-foreground font-semibold hover:border-primary/30 hover:bg-primary/5 transition-all cursor-default shadow-sm bg-white"
+                        className="px-6 py-3.5 text-sm rounded-2xl border-2 border-primary/5 text-foreground font-semibold hover:border-primary/20 hover:bg-primary/[0.02] transition-all cursor-default shadow-sm bg-white"
                       >
                         {skill}
                       </Badge>
@@ -210,61 +241,43 @@ export default function ProfilePage() {
                 </div>
               </section>
 
-              {/* Interests Section */}
-              <section className="space-y-6">
-                <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
-                  <Star className="w-6 h-6 text-creative" /> Vision Areas
-                </h2>
-                <div className="flex flex-wrap gap-4">
-                  {userData.interests?.length > 0 ? (
-                    userData.interests.map((interest: string, i: number) => (
-                      <div 
-                        key={i} 
-                        className="flex items-center gap-3 px-6 py-4 bg-white rounded-3xl border shadow-sm hover:shadow-lg transition-all cursor-default group hover:border-creative/20"
-                      >
-                        <div className="w-3 h-3 rounded-full bg-creative/40 group-hover:bg-creative transition-colors" />
-                        <span className="text-sm font-bold">{interest}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Define your collaboration interests.</p>
-                  )}
-                </div>
-              </section>
-
               {/* Active Projects Section */}
-              <section className="space-y-6 pb-12">
-                <h2 className="text-2xl font-bold font-headline flex items-center gap-2">
-                  <Briefcase className="w-6 h-6 text-hackathon" /> Project Portfolio
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="space-y-6">
+                <div className="flex items-center justify-between border-b pb-4">
+                  <h2 className="text-2xl font-bold font-headline flex items-center gap-3">
+                    <Briefcase className="w-7 h-7 text-hackathon" /> Project Portfolio
+                  </h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {[
                     { title: "AI Study Companion", role: "Frontend Developer", status: "In Progress", color: "bg-creative", members: 3 },
                     { title: "Campus Vote Blockchain", role: "Backend Contributor", status: "Active", color: "bg-primary", members: 2 }
                   ].map((project, idx) => (
-                    <Card key={idx} className="border-none shadow-soft group hover:shadow-xl transition-all bg-white overflow-hidden rounded-3xl">
-                      <div className={`h-2 w-full ${project.color}`} />
+                    <Card key={idx} className="border-none shadow-soft group hover:shadow-xl transition-all bg-white overflow-hidden rounded-[2rem]">
+                      <div className={`h-2.5 w-full ${project.color}`} />
                       <CardContent className="p-8">
                         <div className="flex justify-between items-start mb-6">
                           <div className="space-y-1">
                             <h4 className="font-bold text-xl group-hover:text-primary transition-colors">{project.title}</h4>
-                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">{project.role}</p>
+                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{project.role}</p>
                           </div>
-                          <Badge className="bg-green-500/10 text-green-600 border-green-500/20 rounded-xl text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
+                          <Badge className="bg-green-500/10 text-green-600 border-green-500/20 rounded-lg text-[9px] font-bold px-2 py-0.5 uppercase tracking-widest">
                             {project.status}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="flex -space-x-2">
+                        <div className="flex items-center gap-3 mb-8">
+                          <div className="flex -space-x-2.5">
                             {[1, 2, 3].map(i => (
-                              <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-muted" />
+                              <div key={i} className="w-9 h-9 rounded-full border-4 border-white bg-muted shadow-sm overflow-hidden">
+                                <img src={`https://picsum.photos/seed/teammate${i}${idx}/50/50`} alt="teammate" />
+                              </div>
                             ))}
                           </div>
                           <span className="text-[10px] font-bold text-muted-foreground">{project.members} Collaborators</span>
                         </div>
-                        <Button variant="ghost" size="sm" className="w-full justify-between text-xs font-bold text-muted-foreground hover:text-primary rounded-xl h-11 border-2 border-transparent hover:border-primary/10 group/btn" asChild>
+                        <Button variant="ghost" className="w-full justify-between text-xs font-bold text-muted-foreground hover:text-primary rounded-xl h-12 border-2 border-transparent hover:border-primary/10 group/btn bg-muted/20" asChild>
                           <Link href="/dashboard">
-                            Open Team Room <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                            Open Workspace <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
                           </Link>
                         </Button>
                       </CardContent>
@@ -272,13 +285,13 @@ export default function ProfilePage() {
                   ))}
                   
                   {/* Empty State / Add Project */}
-                  <Card className="border-4 border-dashed border-muted/50 bg-transparent shadow-none flex flex-col items-center justify-center p-8 text-center space-y-4 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer rounded-3xl group">
-                    <div className="w-14 h-14 rounded-2xl bg-muted/30 flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-110 transition-all">
-                      <Cpu className="w-7 h-7 text-muted-foreground group-hover:text-primary" />
+                  <Card className="border-4 border-dashed border-muted/50 bg-transparent shadow-none flex flex-col items-center justify-center p-8 text-center space-y-4 hover:border-primary/40 hover:bg-primary/[0.03] transition-all cursor-pointer rounded-[2rem] group h-full min-h-[280px]">
+                    <div className="w-16 h-16 rounded-2xl bg-muted/20 flex items-center justify-center group-hover:bg-primary/10 group-hover:scale-110 transition-all">
+                      <Cpu className="w-8 h-8 text-muted-foreground group-hover:text-primary" />
                     </div>
-                    <div>
-                      <h4 className="text-lg font-bold">New Adventure?</h4>
-                      <p className="text-xs text-muted-foreground font-medium">Start a new project or join a team</p>
+                    <div className="space-y-1">
+                      <h4 className="text-xl font-bold text-foreground">Launch Project</h4>
+                      <p className="text-sm text-muted-foreground font-medium">Build your next big idea.</p>
                     </div>
                   </Card>
                 </div>
