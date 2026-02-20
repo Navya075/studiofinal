@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -27,7 +30,8 @@ import {
   Camera,
   Layers,
   Grid,
-  Check
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -63,52 +67,101 @@ const NON_TECH_SKILLS = [
   'Financial Modeling', 'User Research', 'Product Pitching', 'Community Building'
 ];
 
+const onboardingSchema = z.object({
+  fullName: z.string().min(2, "Full name must be at least 2 characters"),
+  email: z.string().email("Invalid email address").endsWith(".edu", "Please use your university (.edu) email"),
+  university: z.string().min(2, "University name is required"),
+  major: z.string().min(2, "Major is required"),
+  degree: z.string().min(2, "Degree is required"),
+  graduationYear: z.string().regex(/^\d{4}$/, "Must be a 4-digit year"),
+  bio: z.string().min(10, "Bio must be at least 10 characters").max(200, "Bio must be under 200 characters"),
+  skills: z.array(z.string()).min(1, "Select at least one skill"),
+  interests: z.array(z.string()).min(1, "Select at least one interest")
+});
+
+type OnboardingValues = z.infer<typeof onboardingSchema>;
+
 export default function OnboardingFlow() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    university: '',
-    major: '',
-    degree: '',
-    graduationYear: '',
-    bio: '',
-    skills: [] as string[],
-    interests: [] as string[]
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isValid },
+    trigger
+  } = useForm<OnboardingValues>({
+    resolver: zodResolver(onboardingSchema),
+    mode: 'onChange',
+    defaultValues: {
+      fullName: '',
+      email: '',
+      university: '',
+      major: '',
+      degree: '',
+      graduationYear: '',
+      bio: '',
+      skills: [],
+      interests: []
+    }
   });
 
-  const handleNext = () => setStep(step + 1);
+  const skills = watch('skills');
+  const interests = watch('interests');
+
+  const handleNext = async () => {
+    let fieldsToValidate: (keyof OnboardingValues)[] = [];
+    if (step === 1) fieldsToValidate = ['skills'];
+    if (step === 2) fieldsToValidate = ['fullName', 'email', 'university', 'major', 'degree', 'graduationYear', 'bio'];
+    if (step === 3) fieldsToValidate = ['interests'];
+
+    const isStepValid = await trigger(fieldsToValidate);
+    if (isStepValid) {
+      setStep(step + 1);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please fix the errors before proceeding.",
+      });
+    }
+  };
+
   const handleBack = () => setStep(step - 1);
 
   const toggleSkill = (skill: string) => {
-    setFormData(prev => ({
-      ...prev,
-      skills: prev.skills.includes(skill) 
-        ? prev.skills.filter(s => s !== skill) 
-        : [...prev.skills, skill]
-    }));
+    const current = [...skills];
+    const index = current.indexOf(skill);
+    if (index > -1) {
+      current.splice(index, 1);
+    } else {
+      current.push(skill);
+    }
+    setValue('skills', current, { shouldValidate: true });
   };
 
   const toggleInterest = (id: string) => {
-    setFormData(prev => ({
-      ...prev,
-      interests: prev.interests.includes(id) 
-        ? prev.interests.filter(i => i !== id) 
-        : [...prev.interests, id]
-    }));
+    const current = [...interests];
+    const index = current.indexOf(id);
+    if (index > -1) {
+      current.splice(index, 1);
+    } else {
+      current.push(id);
+    }
+    setValue('interests', current, { shouldValidate: true });
   };
 
-  const handleFinish = async () => {
+  const onFinalSubmit = async (data: OnboardingValues) => {
     setIsSubmitting(true);
     // Simulation of account creation
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
         title: "Account Created!",
-        description: "Welcome to CampusConnect. Your collaborative journey starts now.",
+        description: `Welcome, ${data.fullName}! Your collaborative journey starts now.`,
       });
       router.push('/dashboard');
     }, 1500);
@@ -122,6 +175,7 @@ export default function OnboardingFlow() {
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold font-headline">Select Your Domains</h3>
               <p className="text-sm text-muted-foreground">Choose the badges that best represent your core strengths.</p>
+              {errors.skills && <p className="text-xs text-destructive mt-2 font-medium">{errors.skills.message}</p>}
             </div>
             <div className="space-y-4">
               <Label className="text-lg font-bold flex items-center gap-2">
@@ -131,14 +185,14 @@ export default function OnboardingFlow() {
                 {TECH_SKILLS.map(skill => (
                   <Badge 
                     key={skill} 
-                    variant={formData.skills.includes(skill) ? "default" : "outline"}
+                    variant={skills.includes(skill) ? "default" : "outline"}
                     onClick={() => toggleSkill(skill)}
                     className={cn(
                       "px-4 py-2 cursor-pointer transition-all border-primary/30 rounded-xl",
-                      formData.skills.includes(skill) ? "bg-primary text-white scale-105" : "hover:bg-primary/10"
+                      skills.includes(skill) ? "bg-primary text-white scale-105" : "hover:bg-primary/10"
                     )}
                   >
-                    {skill} {formData.skills.includes(skill) ? <X className="w-3 h-3 ml-1" /> : <Plus className="w-3 h-3 ml-1" />}
+                    {skill} {skills.includes(skill) ? <X className="w-3 h-3 ml-1" /> : <Plus className="w-3 h-3 ml-1" />}
                   </Badge>
                 ))}
               </div>
@@ -151,14 +205,14 @@ export default function OnboardingFlow() {
                 {NON_TECH_SKILLS.map(skill => (
                   <Badge 
                     key={skill} 
-                    variant={formData.skills.includes(skill) ? "default" : "outline"}
+                    variant={skills.includes(skill) ? "default" : "outline"}
                     onClick={() => toggleSkill(skill)}
                     className={cn(
                       "px-4 py-2 cursor-pointer transition-all border-creative/30 rounded-xl",
-                      formData.skills.includes(skill) ? "bg-creative text-white scale-105" : "hover:bg-creative/10 text-creative"
+                      skills.includes(skill) ? "bg-creative text-white scale-105" : "hover:bg-creative/10 text-creative"
                     )}
                   >
-                    {skill} {formData.skills.includes(skill) ? <X className="w-3 h-3 ml-1" /> : <Plus className="w-3 h-3 ml-1" />}
+                    {skill} {skills.includes(skill) ? <X className="w-3 h-3 ml-1" /> : <Plus className="w-3 h-3 ml-1" />}
                   </Badge>
                 ))}
               </div>
@@ -175,11 +229,13 @@ export default function OnboardingFlow() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label>Full Name</Label>
-                <Input value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} placeholder="John Doe" />
+                <Input {...register('fullName')} placeholder="John Doe" className={errors.fullName ? "border-destructive" : ""} />
+                {errors.fullName && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.fullName.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label>College Email</Label>
-                <Input value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="john@university.edu" type="email" />
+                <Input {...register('email')} placeholder="john@university.edu" type="email" className={errors.email ? "border-destructive" : ""} />
+                {errors.email && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.email.message}</p>}
               </div>
             </div>
             <div className="p-5 bg-muted/20 rounded-2xl border space-y-5">
@@ -188,15 +244,28 @@ export default function OnboardingFlow() {
                 <span>Education Background</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input placeholder="University" value={formData.university} onChange={e => setFormData({...formData, university: e.target.value})} />
-                <Input placeholder="Major" value={formData.major} onChange={e => setFormData({...formData, major: e.target.value})} />
-                <Input placeholder="Degree" value={formData.degree} onChange={e => setFormData({...formData, degree: e.target.value})} />
-                <Input placeholder="Graduation Year" value={formData.graduationYear} onChange={e => setFormData({...formData, graduationYear: e.target.value})} />
+                <div className="space-y-1">
+                  <Input placeholder="University" {...register('university')} className={errors.university ? "border-destructive" : ""} />
+                  {errors.university && <p className="text-[10px] text-destructive font-medium">{errors.university.message}</p>}
+                </div>
+                <div className="space-y-1">
+                  <Input placeholder="Major" {...register('major')} className={errors.major ? "border-destructive" : ""} />
+                  {errors.major && <p className="text-[10px] text-destructive font-medium">{errors.major.message}</p>}
+                </div>
+                <div className="space-y-1">
+                  <Input placeholder="Degree" {...register('degree')} className={errors.degree ? "border-destructive" : ""} />
+                  {errors.degree && <p className="text-[10px] text-destructive font-medium">{errors.degree.message}</p>}
+                </div>
+                <div className="space-y-1">
+                  <Input placeholder="Graduation Year (e.g. 2026)" {...register('graduationYear')} className={errors.graduationYear ? "border-destructive" : ""} />
+                  {errors.graduationYear && <p className="text-[10px] text-destructive font-medium">{errors.graduationYear.message}</p>}
+                </div>
               </div>
             </div>
             <div className="space-y-2">
               <Label>Bio</Label>
-              <Textarea value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} placeholder="What drives you?" className="resize-none h-28 rounded-xl" />
+              <Textarea {...register('bio')} placeholder="What drives you?" className={cn("resize-none h-28 rounded-xl", errors.bio ? "border-destructive" : "")} />
+              {errors.bio && <p className="text-[10px] text-destructive font-medium">{errors.bio.message}</p>}
             </div>
           </div>
         );
@@ -206,6 +275,7 @@ export default function OnboardingFlow() {
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold font-headline">Passion Board</h3>
               <p className="text-sm text-muted-foreground">Select your interests.</p>
+              {errors.interests && <p className="text-xs text-destructive mt-2 font-medium">{errors.interests.message}</p>}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto pr-2 no-scrollbar">
               {INTEREST_CATEGORIES.map((cat) => (
@@ -214,14 +284,14 @@ export default function OnboardingFlow() {
                   onClick={() => toggleInterest(cat.id)}
                   className={cn(
                     "relative rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 border-2",
-                    formData.interests.includes(cat.id) ? "border-primary shadow-xl scale-[0.98]" : "border-transparent"
+                    interests.includes(cat.id) ? "border-primary shadow-xl scale-[0.98]" : "border-transparent"
                   )}
                 >
                   <img src={cat.image} alt={cat.label} className="w-full h-32 object-cover" />
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-2 text-center">
                     <span className="font-bold text-white text-xs">{cat.label}</span>
                   </div>
-                  {formData.interests.includes(cat.id) && (
+                  {interests.includes(cat.id) && (
                     <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
                       <Check className="w-3 h-3 text-white" />
                     </div>
@@ -242,7 +312,8 @@ export default function OnboardingFlow() {
               <p className="text-muted-foreground">Ready to launch your collaborative journey?</p>
             </div>
             <div className="bg-primary/5 p-6 rounded-2xl border border-primary/20">
-               <p className="text-sm text-center font-bold">You've earned 100 Collab Points!</p>
+               <p className="text-sm text-center font-bold">You've earned 100 Collab Points for joining!</p>
+               <p className="text-[10px] text-center text-muted-foreground mt-2">All data verified for {watch('email')}</p>
             </div>
           </div>
         );
@@ -269,14 +340,16 @@ export default function OnboardingFlow() {
             <CardTitle className="text-3xl font-bold font-headline">Onboarding</CardTitle>
           </CardHeader>
           <CardContent className="min-h-[400px] p-8">
-            {renderStep()}
+            <form onSubmit={handleSubmit(onFinalSubmit)}>
+              {renderStep()}
+            </form>
           </CardContent>
           <CardFooter className="flex justify-between border-t p-8 bg-muted/5">
-            {step > 1 && <Button variant="outline" onClick={handleBack}>Back</Button>}
+            {step > 1 && <Button variant="outline" onClick={handleBack} disabled={isSubmitting}>Back</Button>}
             {step < 4 ? (
               <Button onClick={handleNext} className="ml-auto">Continue</Button>
             ) : (
-              <Button onClick={handleFinish} disabled={isSubmitting} className="ml-auto bg-primary text-white">
+              <Button onClick={handleSubmit(onFinalSubmit)} disabled={isSubmitting} className="ml-auto bg-primary text-white">
                 {isSubmitting ? 'Finalizing...' : 'Launch Dashboard'}
               </Button>
             )}

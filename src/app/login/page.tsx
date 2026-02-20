@@ -1,11 +1,40 @@
+"use client";
+
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Layers } from 'lucide-react';
+import { Layers, AlertCircle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid college email").endsWith(".edu", "Must be a .edu email"),
+  password: z.string().min(6, "Password must be at least 6 characters")
+});
+
+type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema)
+  });
+
+  const onSubmit = (data: LoginValues) => {
+    setIsLoading(true);
+    // Simulation
+    setTimeout(() => {
+      setIsLoading(false);
+      router.push('/dashboard');
+    }, 1200);
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-md space-y-8 animate-in fade-in zoom-in duration-500">
@@ -25,21 +54,48 @@ export default function LoginPage() {
             <CardTitle>Login</CardTitle>
             <CardDescription>Enter your college email and password</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">College Email</Label>
-              <Input id="email" type="email" placeholder="student@university.edu" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link href="#" className="text-sm text-tech hover:underline">Forgot password?</Link>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">College Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="student@university.edu" 
+                  {...register('email')}
+                  className={errors.email ? "border-destructive" : ""}
+                />
+                {errors.email && (
+                  <p className="text-xs text-destructive font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {errors.email.message}
+                  </p>
+                )}
               </div>
-              <Input id="password" type="password" />
-            </div>
-            <Button className="w-full h-12 text-lg bg-foreground text-background hover:bg-foreground/90 mt-2" asChild>
-              <Link href="/dashboard">Login</Link>
-            </Button>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link href="#" className="text-sm text-tech hover:underline">Forgot password?</Link>
+                </div>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  {...register('password')}
+                  className={errors.password ? "border-destructive" : ""}
+                />
+                {errors.password && (
+                  <p className="text-xs text-destructive font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {errors.password.message}
+                  </p>
+                )}
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-lg bg-foreground text-background hover:bg-foreground/90 mt-2"
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Login"}
+              </Button>
+            </form>
           </CardContent>
           <CardFooter className="flex justify-center border-t py-6">
             <p className="text-sm text-muted-foreground">
