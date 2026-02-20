@@ -18,8 +18,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
-import { doc } from 'firebase/firestore';
-import { initializeFirebase, useDoc } from '@/firebase';
+import { MOCK_PROJECTS } from '@/app/dashboard/page';
 
 const TEAM_MEMBERS = [
   { id: '1', name: 'John Doe', role: 'Team Lead / Frontend', skills: ['React', 'NextJS'], image: 'https://picsum.photos/seed/user/100/100' },
@@ -42,10 +41,10 @@ const GOOGLE_CAL_EVENTS = [
 export default function TeamRoomPage() {
   const params = useParams();
   const projectId = params?.id as string;
-  const { db } = initializeFirebase();
   
-  const projectRef = useMemo(() => projectId ? doc(db, 'projects', projectId) : null, [db, projectId]);
-  const { data: project, loading } = useDoc(projectRef);
+  const project = useMemo(() => {
+    return MOCK_PROJECTS.find(p => p.id === projectId) || MOCK_PROJECTS[0];
+  }, [projectId]);
 
   const [activeTab, setActiveTab] = useState('chat');
   const [isMuted, setIsMuted] = useState(false);
@@ -87,17 +86,6 @@ export default function TeamRoomPage() {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium">Entering Team Room...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (!project) {
     return (
       <div className="flex h-screen items-center justify-center bg-background p-6">
@@ -122,19 +110,13 @@ export default function TeamRoomPage() {
           <div className="flex flex-col h-full animate-in fade-in duration-300">
             <header className="h-16 border-b flex items-center px-6 justify-between bg-white shrink-0">
               <div className="flex items-center gap-2">
-                <h2 className="font-bold font-headline truncate max-w-[200px]">{project?.title || "Team Room"}</h2>
-                {project.status === 'Active' ? (
-                  <div className="w-2 h-2 bg-green-500 rounded-full ml-2 animate-pulse" />
-                ) : (
-                  <Badge variant="secondary" className="ml-2 bg-tech/10 text-tech border-tech/20">Archived: {project.status}</Badge>
-                )}
+                <h2 className="font-bold font-headline truncate max-w-[200px]">{project.title}</h2>
+                <div className="w-2 h-2 bg-green-500 rounded-full ml-2 animate-pulse" />
               </div>
               <div className="flex items-center gap-2">
-                {project.status === 'Active' && (
-                  <Button onClick={handleCompleteProject} variant="outline" className="border-tech text-tech hover:bg-tech/5 rounded-full px-4 h-9 text-xs font-bold gap-2">
-                    <CheckCircle2 className="w-4 h-4" /> Mark as Completed
-                  </Button>
-                )}
+                <Button onClick={handleCompleteProject} variant="outline" className="border-tech text-tech hover:bg-tech/5 rounded-full px-4 h-9 text-xs font-bold gap-2">
+                  <CheckCircle2 className="w-4 h-4" /> Mark as Completed
+                </Button>
                 <Button variant="ghost" size="icon"><Search className="w-4 h-4" /></Button>
                 <Button variant="ghost" size="icon"><MoreVertical className="w-4 h-4" /></Button>
               </div>
@@ -142,16 +124,8 @@ export default function TeamRoomPage() {
             
             <ScrollArea className="flex-1 p-6 bg-muted/5">
               <div className="space-y-8 max-w-4xl mx-auto">
-                {project.status === 'Completed' && (
-                  <div className="bg-tech/5 border border-tech/20 rounded-2xl p-6 text-center space-y-3 mb-8">
-                    <Trophy className="w-10 h-10 text-tech mx-auto" />
-                    <h3 className="font-bold text-lg">Project Milestone Reached!</h3>
-                    <p className="text-sm text-muted-foreground italic">"Great work everyone! The {project?.title} project is now ready for deployment."</p>
-                    <Button onClick={() => setShowRatingDialog(true)} size="sm" className="bg-tech text-white rounded-xl">Review Teammates</Button>
-                  </div>
-                )}
                 {[
-                  { user: 'Alex', text: 'Hey guys, did we finish the latest task for ' + (project?.title || 'this project') + '?', time: '10:05 AM', isSelf: false },
+                  { user: 'Alex', text: 'Hey guys, did we finish the latest task for ' + project.title + '?', time: '10:05 AM', isSelf: false },
                   { user: 'Sara', text: 'Almost done. I am just finalizing the backend endpoints.', time: '10:07 AM', isSelf: false },
                   { user: 'John', text: 'I am working on the integration now. I will need those specs by tonight!', time: '10:15 AM', isSelf: true },
                 ].map((msg, idx) => (
@@ -177,11 +151,11 @@ export default function TeamRoomPage() {
             <div className="p-4 bg-white border-t shrink-0">
               <div className="max-w-4xl mx-auto flex items-end gap-2 bg-muted/30 rounded-2xl p-2 border focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                 <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-xl hover:bg-white"><Plus className="w-5 h-5" /></Button>
-                <Input disabled={project.status === 'Completed'} className="border-none bg-transparent shadow-none ring-0 focus-visible:ring-0 min-h-[40px]" placeholder={project.status === 'Completed' ? "Channel archived..." : "Type your message..."} />
+                <Input className="border-none bg-transparent shadow-none ring-0 focus-visible:ring-0 min-h-[40px]" placeholder="Type your message..." />
                 <div className="flex items-center px-2">
                   <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white"><Paperclip className="w-5 h-5" /></Button>
                   <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white"><Smile className="w-5 h-5" /></Button>
-                  <Button disabled={project.status === 'Completed'} className="h-10 w-10 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 ml-2"><Send className="w-4 h-4" /></Button>
+                  <Button className="h-10 w-10 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 ml-2"><Send className="w-4 h-4" /></Button>
                 </div>
               </div>
             </div>
@@ -193,7 +167,7 @@ export default function TeamRoomPage() {
              <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-3xl font-bold font-headline">Shared Workspace</h2>
-                  <p className="text-muted-foreground">Assets for {project?.title || "Project"}.</p>
+                  <p className="text-muted-foreground">Assets for {project.title}.</p>
                 </div>
                 <Button className="bg-primary text-white rounded-xl gap-2 h-11 px-6 shadow-lg shadow-primary/10">
                   <Plus className="w-4 h-4" /> Upload File
@@ -261,7 +235,7 @@ export default function TeamRoomPage() {
              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-3xl font-bold font-headline">Roadmap</h2>
-                  <p className="text-muted-foreground">Timeline for {project?.title}.</p>
+                  <p className="text-muted-foreground">Timeline for {project.title}.</p>
                 </div>
                 <Button onClick={handleSyncGoogleCalendar} variant={isCalendarSynced ? "secondary" : "default"} disabled={isSyncing} className="rounded-xl gap-2 h-11 px-6">
                   {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
@@ -301,7 +275,7 @@ export default function TeamRoomPage() {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <TeamSidebar activeTab={activeTab} setActiveTab={setActiveTab} teamName={project?.title || "Team"} />
+      <TeamSidebar activeTab={activeTab} setActiveTab={setActiveTab} teamName={project.title} />
       <div className="flex-1 overflow-hidden relative bg-white/60 backdrop-blur-sm">
         {renderContent()}
       </div>

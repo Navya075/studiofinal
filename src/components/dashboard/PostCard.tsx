@@ -1,17 +1,12 @@
-
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, Calendar, Clock, ArrowRight, CheckCircle2, User, Loader2, XCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { initializeFirebase, useUser } from '@/firebase';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 interface PostCardProps {
   post: {
@@ -27,61 +22,27 @@ interface PostCardProps {
     dueDate: string;
     category: string;
     isVerified?: boolean;
-    memberIds: string[];
   };
+  isJoined?: boolean;
+  onJoin?: () => void;
 }
 
 type JoinStatus = 'idle' | 'waiting' | 'accepted' | 'rejected';
 
-export function PostCard({ post }: PostCardProps) {
-  const { db } = initializeFirebase();
-  const { user } = useUser();
-  const [status, setStatus] = useState<JoinStatus>('idle');
-
-  useEffect(() => {
-    if (user && post.memberIds?.includes(user.uid)) {
-      setStatus('accepted');
-    }
-  }, [user, post.memberIds]);
+export function PostCard({ post, isJoined = false, onJoin }: PostCardProps) {
+  const [status, setStatus] = useState<JoinStatus>(isJoined ? 'accepted' : 'idle');
 
   const handleJoin = () => {
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Required",
-        description: "Please sign in to join projects.",
-      });
-      return;
-    }
-
     setStatus('waiting');
-    
-    const projectRef = doc(db, 'projects', post.id);
-
-    updateDoc(projectRef, {
-      memberIds: arrayUnion(user.uid)
-    })
-    .then(() => {
+    // Simulation
+    setTimeout(() => {
       setStatus('accepted');
+      if (onJoin) onJoin();
       toast({
         title: "Joined Project!",
         description: `You are now a member of ${post.title}.`,
       });
-    })
-    .catch(async (err) => {
-      const permissionError = new FirestorePermissionError({
-        path: projectRef.path,
-        operation: 'update',
-        requestResourceData: { memberIds: user.uid },
-      });
-      errorEmitter.emit('permission-error', permissionError);
-      setStatus('idle');
-      toast({
-        variant: "destructive",
-        title: "Join Failed",
-        description: "Could not join the project. Please try again.",
-      });
-    });
+    }, 1200);
   };
 
   const renderActionButton = () => {
@@ -188,7 +149,7 @@ export function PostCard({ post }: PostCardProps) {
                 <div 
                   key={i} 
                   className={`w-3 h-3 rounded-full ${
-                    i < post.members ? 'bg-primary' : 'bg-muted'
+                    i < post.members || (i === post.members && status === 'accepted' && post.owner !== 'You') ? 'bg-primary' : 'bg-muted'
                     }`} 
                 />
               ))}

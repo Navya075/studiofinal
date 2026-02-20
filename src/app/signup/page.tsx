@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -28,15 +27,9 @@ import {
   Camera,
   Layers,
   Grid,
-  Check,
-  AlertCircle
+  Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { doc, setDoc } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
-import { initializeFirebase, useUser } from '@/firebase';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { toast } from '@/hooks/use-toast';
 
 const INTEREST_CATEGORIES = [
@@ -74,7 +67,6 @@ export default function OnboardingFlow() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useUser();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -111,61 +103,15 @@ export default function OnboardingFlow() {
 
   const handleFinish = async () => {
     setIsSubmitting(true);
-    const { auth, db } = initializeFirebase();
-
-    try {
-      let currentUser = user;
-      
-      if (!currentUser) {
-        try {
-          const cred = await signInAnonymously(auth);
-          currentUser = cred.user;
-        } catch (authError: any) {
-          console.error("Auth Error:", authError);
-          toast({
-            variant: "destructive",
-            title: "Authentication Failed",
-            description: "Please ensure 'Anonymous Authentication' is enabled in the Firebase Console and your API key is correct.",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      if (currentUser) {
-        const userRef = doc(db, 'users', currentUser.uid);
-        const profileData = {
-          ...formData,
-          email: formData.email || currentUser.email || '',
-          rating: 5,
-          points: 100,
-          preferredRole: formData.skills[0] || 'Contributor',
-          availability: 'Flexible',
-        };
-
-        setDoc(userRef, profileData, { merge: true })
-          .then(() => {
-            router.push('/dashboard');
-          })
-          .catch(async (err) => {
-            const permissionError = new FirestorePermissionError({
-              path: userRef.path,
-              operation: 'write',
-              requestResourceData: profileData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-          });
-      }
-    } catch (error: any) {
-      console.error("Error during onboarding finish:", error);
-      toast({
-        variant: "destructive",
-        title: "Something went wrong",
-        description: error.message || "An unexpected error occurred during onboarding.",
-      });
-    } finally {
+    // Simulation of account creation
+    setTimeout(() => {
       setIsSubmitting(false);
-    }
+      toast({
+        title: "Account Created!",
+        description: "Welcome to CampusConnect. Your collaborative journey starts now.",
+      });
+      router.push('/dashboard');
+    }, 1500);
   };
 
   const renderStep = () => {

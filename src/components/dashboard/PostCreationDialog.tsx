@@ -10,14 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, X, ShieldAlert } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { addDoc, collection } from 'firebase/firestore';
-import { initializeFirebase, useUser } from '@/firebase';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
-export function PostCreationDialog() {
-  const { db } = initializeFirebase();
-  const { user } = useUser();
+interface PostCreationDialogProps {
+  onCreate?: (project: any) => void;
+}
+
+export function PostCreationDialog({ onCreate }: PostCreationDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [type, setType] = useState('Hackathon');
@@ -39,43 +37,31 @@ export function PostCreationDialog() {
     }
 
     setIsSubmitting(true);
-    
-    const projectData = {
-      title,
-      type,
-      summary,
-      description,
-      requiredSkills: skills,
-      teamSize,
-      duration: duration || 'TBD',
-      status: 'Active',
-      isVerified: false,
-      ownerId: user?.uid || 'anonymous'
-    };
-
-    const projectsRef = collection(db, 'projects');
-
-    addDoc(projectsRef, projectData)
-      .then(() => {
-        toast({ title: "Success", description: "Your project post is now live!" });
-        setOpen(false);
-        setIsSubmitting(false);
-        // Reset form
-        setTitle('');
-        setSummary('');
-        setDescription('');
-        setSkills(['React', 'Next.js']);
-        setDuration('');
-      })
-      .catch(async (err) => {
-        const permissionError = new FirestorePermissionError({
-          path: projectsRef.path,
-          operation: 'create',
-          requestResourceData: projectData,
+    // Simulation
+    setTimeout(() => {
+      if (onCreate) {
+        onCreate({
+          title,
+          type,
+          summary,
+          description,
+          tags: skills,
+          maxMembers: teamSize,
+          dueDate: duration || 'TBD',
+          status: 'Active',
+          isVerified: false,
         });
-        errorEmitter.emit('permission-error', permissionError);
-        setIsSubmitting(false);
-      });
+      }
+      toast({ title: "Success", description: "Your project post is now live!" });
+      setOpen(false);
+      setIsSubmitting(false);
+      // Reset form
+      setTitle('');
+      setSummary('');
+      setDescription('');
+      setSkills(['React', 'Next.js']);
+      setDuration('');
+    }, 1000);
   };
 
   return (

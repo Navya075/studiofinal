@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -29,68 +28,109 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import { collection, query, where } from 'firebase/firestore';
-import { initializeFirebase, useCollection, useUser } from '@/firebase';
 
-const TABS = [
-  { id: 'All Feed', label: 'All Feed', icon: <LayoutGrid className="w-4 h-4" /> },
-  { id: 'Technical', label: 'Technical', icon: <Code className="w-4 h-4" /> },
-  { id: 'Non-Technical', label: 'Non-Technical', icon: <PenTool className="w-4 h-4" /> },
-  { id: 'My Badges', label: 'My Badges', icon: <Sparkles className="w-4 h-4" /> },
-  { id: 'Teams', label: 'Teams', icon: <Users className="w-4 h-4" /> },
+export const MOCK_PROJECTS = [
+  {
+    id: 'p1',
+    title: 'Blockchain Campus Vote',
+    status: 'Active',
+    timeLeft: '2 days left',
+    summary: 'A decentralized voting system for student government elections using Solidity and React.',
+    tags: ['Solidity', 'React', 'Ethers.js'],
+    owner: 'Alex Rivers',
+    members: 2,
+    maxMembers: 4,
+    dueDate: 'Nov 12',
+    category: 'Technical',
+    isVerified: true,
+  },
+  {
+    id: 'p2',
+    title: 'Sustainability Hub App',
+    status: 'Active',
+    timeLeft: '5 days left',
+    summary: 'Building a mobile app to track campus recycling and reward green initiatives.',
+    tags: ['Flutter', 'Firebase', 'UI/UX'],
+    owner: 'Sara Chen',
+    members: 3,
+    maxMembers: 5,
+    dueDate: 'Nov 20',
+    category: 'General',
+    isVerified: false,
+  },
+  {
+    id: 'p3',
+    title: 'AI Study Companion',
+    status: 'Active',
+    timeLeft: '1 week left',
+    summary: 'LLM-powered tool to summarize lecture notes and generate custom practice quizzes.',
+    tags: ['Python', 'OpenAI', 'Next.js'],
+    owner: 'You',
+    members: 1,
+    maxMembers: 3,
+    dueDate: 'Dec 05',
+    category: 'Technical',
+    isVerified: true,
+  }
 ];
 
 export default function DashboardPage() {
-  const { db } = initializeFirebase();
-  const { user } = useUser();
-  
   const [activeTab, setActiveTab] = useState('All Feed');
   const [filterVerified, setFilterVerified] = useState(false);
   const [filterUnverified, setFilterUnverified] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [joinedIds, setJoinedIds] = useState<string[]>(['p3']); // Mocking the user is already in p3
+  const [projects, setProjects] = useState(MOCK_PROJECTS);
 
-  // Main feed query
-  const projectsQuery = useMemo(() => collection(db, 'projects'), [db]);
-  const { data: dbProjects, loading: loadingAll } = useCollection(projectsQuery);
+  const handleJoinProject = (id: string) => {
+    setJoinedIds(prev => [...prev, id]);
+  };
 
-  // Filtered logic
   const filteredProjects = useMemo(() => {
-    if (!dbProjects) return [];
-    
-    return dbProjects.filter(project => {
+    return projects.filter(project => {
       // Tab Filtering
       if (activeTab === 'Teams') {
-        // Only show projects where user is a member or owner
-        const isMember = project.memberIds?.includes(user?.uid);
-        const isOwner = project.ownerId === user?.uid;
-        if (!isMember && !isOwner) return false;
-      } else if (activeTab === 'Technical' && project.type !== 'Hackathon' && project.type !== 'Startup') {
+        if (!joinedIds.includes(project.id)) return false;
+      } else if (activeTab === 'Technical' && project.category !== 'Technical') {
         return false;
-      } else if (activeTab === 'Non-Technical' && project.type === 'Hackathon') {
+      } else if (activeTab === 'Non-Technical' && project.category === 'Technical') {
         return false;
       }
 
       // Search Filtering
       const matchesSearch = 
-        project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (project.requiredSkills && project.requiredSkills.some((skill: string) => skill.toLowerCase().includes(searchQuery.toLowerCase())));
+        project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
 
       if (!matchesSearch) return false;
 
-      // Dropdown Filters for Verification
+      // Dropdown Filters
       if (filterVerified && !filterUnverified && !project.isVerified) return false;
       if (filterUnverified && !filterVerified && project.isVerified) return false;
 
       return true;
     });
-  }, [dbProjects, activeTab, filterVerified, filterUnverified, searchQuery, user]);
+  }, [projects, activeTab, filterVerified, filterUnverified, searchQuery, joinedIds]);
 
   const resetFilters = () => {
     setFilterVerified(false);
     setFilterUnverified(false);
     setActiveTab('All Feed');
     setSearchQuery('');
+  };
+
+  const handleCreateProject = (newProject: any) => {
+    const project = {
+      ...newProject,
+      id: `p${Date.now()}`,
+      owner: 'You',
+      members: 1,
+      timeLeft: 'Just launched',
+      category: newProject.type === 'Hackathon' ? 'Technical' : 'General',
+    };
+    setProjects([project, ...projects]);
+    setJoinedIds(prev => [...prev, project.id]);
   };
 
   return (
@@ -106,7 +146,7 @@ export default function DashboardPage() {
             </h1>
             <p className="text-muted-foreground text-lg">Find your next project or build a winning team.</p>
           </div>
-          <PostCreationDialog />
+          <PostCreationDialog onCreate={handleCreateProject} />
         </div>
 
         {/* Search Bar Row - Below Header */}
@@ -185,27 +225,13 @@ export default function DashboardPage() {
 
         {/* Content Feed */}
         <div className="grid grid-cols-1 gap-6">
-          {loadingAll ? (
-            <div className="text-center py-24">Loading projects...</div>
-          ) : filteredProjects.length > 0 ? (
+          {filteredProjects.length > 0 ? (
             filteredProjects.map(project => (
               <PostCard 
                 key={project.id} 
-                post={{
-                  id: project.id,
-                  title: project.title,
-                  status: project.status,
-                  timeLeft: 'Active',
-                  summary: project.summary,
-                  tags: project.requiredSkills || [],
-                  owner: project.ownerId === user?.uid ? 'You' : 'Teammate',
-                  members: (project.memberIds?.length || 0) + 1,
-                  maxMembers: project.teamSize || 4,
-                  dueDate: project.duration || 'TBD',
-                  category: project.type === 'Hackathon' ? 'Technical' : 'General',
-                  isVerified: project.isVerified,
-                  memberIds: project.memberIds || []
-                }} 
+                post={project} 
+                isJoined={joinedIds.includes(project.id)}
+                onJoin={() => handleJoinProject(project.id)}
               />
             ))
           ) : (
@@ -229,3 +255,11 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+const TABS = [
+  { id: 'All Feed', label: 'All Feed', icon: <LayoutGrid className="w-4 h-4" /> },
+  { id: 'Technical', label: 'Technical', icon: <Code className="w-4 h-4" /> },
+  { id: 'Non-Technical', label: 'Non-Technical', icon: <PenTool className="w-4 h-4" /> },
+  { id: 'My Badges', label: 'My Badges', icon: <Sparkles className="w-4 h-4" /> },
+  { id: 'Teams', label: 'Teams', icon: <Users className="w-4 h-4" /> },
+];
