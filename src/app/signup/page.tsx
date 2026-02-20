@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -272,7 +273,7 @@ export default function OnboardingFlow() {
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">Initial Peer Rating</p>
               <div className="flex gap-1.5">
                 {[1, 2, 3, 4, 5].map(i => (
-                  <Star className={cn("w-6 h-6", i <= 4 ? "text-yellow-500 fill-yellow-500" : i === 5 ? "text-yellow-500/50 fill-yellow-500/20" : "text-muted")} />
+                  <Star key={i} className={cn("w-6 h-6", i <= 4 ? "text-yellow-500 fill-yellow-500" : i === 5 ? "text-yellow-500/50 fill-yellow-500/20" : "text-muted")} />
                 ))}
               </div>
               <p className="text-xs font-bold text-primary">Baseline: 4.5 Stars</p>
