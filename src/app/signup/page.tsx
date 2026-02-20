@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -44,27 +45,16 @@ const INTEREST_CATEGORIES = [
   { id: 'ui-ux', label: 'UI/UX Design', icon: <Palette className="w-5 h-5" />, image: 'https://picsum.photos/seed/design/400/450' },
   { id: 'startups', label: 'Startups', icon: <Zap className="w-5 h-5" />, image: 'https://picsum.photos/seed/startup/400/300' },
   { id: 'robotics', label: 'Robotics', icon: <Layers className="w-5 h-5" />, image: 'https://picsum.photos/seed/robot/400/400' },
-  { id: 'singing', label: 'Singing', icon: <Music className="w-5 h-5" />, image: 'https://picsum.photos/seed/sing/400/500' },
-  { id: 'dance', label: 'Dance', icon: <Activity className="w-5 h-5" />, image: 'https://picsum.photos/seed/dance/400/320' },
-  { id: 'photography', label: 'Photography', icon: <Camera className="w-5 h-5" />, image: 'https://picsum.photos/seed/photo/400/380' },
-  { id: 'music', label: 'Music', icon: <Music className="w-5 h-5" />, image: 'https://picsum.photos/seed/music/400/300' },
-  { id: 'cricket', label: 'Cricket', icon: <Activity className="w-5 h-5" />, image: 'https://picsum.photos/seed/cricket/400/400' },
-  { id: 'football', label: 'Football', icon: <Activity className="w-5 h-5" />, image: 'https://picsum.photos/seed/football/400/350' },
-  { id: 'chess', label: 'Chess', icon: <Grid className="w-5 h-5" />, image: 'https://picsum.photos/seed/chess/400/450' },
-  { id: 'art', label: 'Art', icon: <Palette className="w-5 h-5" />, image: 'https://picsum.photos/seed/art/400/500' },
 ];
 
 const TECH_SKILLS = [
   'React', 'Next.js', 'Node.js', 'Python', 'Solidity', 'AWS', 'Docker', 
-  'TensorFlow', 'Flutter', 'TypeScript', 'PostgreSQL', 'Go', 'Rust', 
-  'Kubernetes', 'GraphQL', 'MongoDB', 'Firebase', 'Django', 'C++', 'Unity'
+  'TensorFlow', 'Flutter', 'TypeScript'
 ];
 
 const NON_TECH_SKILLS = [
-  'Photography', 'Dance', 'Music', 'Cricket', 'Football', 'Chess', 'Art',
-  'Public Speaking', 'Graphic Design', 'Copywriting', 'Project Management', 
-  'UI/UX', 'SEO', 'Video Editing', 'Sales', 'Content Strategy', 
-  'Financial Modeling', 'User Research', 'Product Pitching', 'Community Building'
+  'Photography', 'Dance', 'Music', 'Public Speaking', 'Graphic Design', 'Project Management', 
+  'UI/UX', 'User Research'
 ];
 
 const onboardingSchema = z.object({
@@ -76,7 +66,8 @@ const onboardingSchema = z.object({
   graduationYear: z.string().regex(/^\d{4}$/, "Must be a 4-digit year"),
   bio: z.string().min(10, "Bio must be at least 10 characters").max(200, "Bio must be under 200 characters"),
   skills: z.array(z.string()).min(1, "Select at least one skill"),
-  interests: z.array(z.string()).min(1, "Select at least one interest")
+  interests: z.array(z.string()).min(1, "Select at least one interest"),
+  password: z.string().min(6, "Password must be at least 6 characters")
 });
 
 type OnboardingValues = z.infer<typeof onboardingSchema>;
@@ -91,7 +82,7 @@ export default function OnboardingFlow() {
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isValid },
+    formState: { errors },
     trigger
   } = useForm<OnboardingValues>({
     resolver: zodResolver(onboardingSchema),
@@ -115,7 +106,7 @@ export default function OnboardingFlow() {
   const handleNext = async () => {
     let fieldsToValidate: (keyof OnboardingValues)[] = [];
     if (step === 1) fieldsToValidate = ['skills'];
-    if (step === 2) fieldsToValidate = ['fullName', 'email', 'university', 'major', 'degree', 'graduationYear', 'bio'];
+    if (step === 2) fieldsToValidate = ['fullName', 'email', 'password', 'university', 'major', 'degree', 'graduationYear', 'bio'];
     if (step === 3) fieldsToValidate = ['interests'];
 
     const isStepValid = await trigger(fieldsToValidate);
@@ -156,8 +147,26 @@ export default function OnboardingFlow() {
 
   const onFinalSubmit = async (data: OnboardingValues) => {
     setIsSubmitting(true);
-    // Simulation of account creation
     setTimeout(() => {
+      // Local Database Emulation
+      const existingUsers = JSON.parse(localStorage.getItem('cc_users') || '[]');
+      const userExists = existingUsers.some((u: any) => u.email === data.email);
+      
+      if (userExists) {
+        setIsSubmitting(false);
+        toast({
+          variant: "destructive",
+          title: "Account Error",
+          description: "An account with this email already exists.",
+        });
+        return;
+      }
+
+      const newUser = { ...data, id: Date.now().toString(), points: 100 };
+      existingUsers.push(newUser);
+      localStorage.setItem('cc_users', JSON.stringify(existingUsers));
+      localStorage.setItem('cc_current_user', JSON.stringify(newUser));
+
       setIsSubmitting(false);
       toast({
         title: "Account Created!",
@@ -237,6 +246,11 @@ export default function OnboardingFlow() {
                 <Input {...register('email')} placeholder="john@university.edu" type="email" className={errors.email ? "border-destructive" : ""} />
                 {errors.email && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.email.message}</p>}
               </div>
+              <div className="space-y-2">
+                <Label>Password</Label>
+                <Input {...register('password')} type="password" placeholder="••••••••" className={errors.password ? "border-destructive" : ""} />
+                {errors.password && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.password.message}</p>}
+              </div>
             </div>
             <div className="p-5 bg-muted/20 rounded-2xl border space-y-5">
               <div className="flex items-center gap-2 font-bold text-sm">
@@ -245,27 +259,22 @@ export default function OnboardingFlow() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Input placeholder="University" {...register('university')} className={errors.university ? "border-destructive" : ""} />
-                  {errors.university && <p className="text-[10px] text-destructive font-medium">{errors.university.message}</p>}
+                  <Input placeholder="University" {...register('university')} />
                 </div>
                 <div className="space-y-1">
-                  <Input placeholder="Major" {...register('major')} className={errors.major ? "border-destructive" : ""} />
-                  {errors.major && <p className="text-[10px] text-destructive font-medium">{errors.major.message}</p>}
+                  <Input placeholder="Major" {...register('major')} />
                 </div>
                 <div className="space-y-1">
-                  <Input placeholder="Degree" {...register('degree')} className={errors.degree ? "border-destructive" : ""} />
-                  {errors.degree && <p className="text-[10px] text-destructive font-medium">{errors.degree.message}</p>}
+                  <Input placeholder="Degree" {...register('degree')} />
                 </div>
                 <div className="space-y-1">
-                  <Input placeholder="Graduation Year (e.g. 2026)" {...register('graduationYear')} className={errors.graduationYear ? "border-destructive" : ""} />
-                  {errors.graduationYear && <p className="text-[10px] text-destructive font-medium">{errors.graduationYear.message}</p>}
+                  <Input placeholder="Graduation Year" {...register('graduationYear')} />
                 </div>
               </div>
             </div>
             <div className="space-y-2">
               <Label>Bio</Label>
-              <Textarea {...register('bio')} placeholder="What drives you?" className={cn("resize-none h-28 rounded-xl", errors.bio ? "border-destructive" : "")} />
-              {errors.bio && <p className="text-[10px] text-destructive font-medium">{errors.bio.message}</p>}
+              <Textarea {...register('bio')} placeholder="What drives you?" className="resize-none h-28" />
             </div>
           </div>
         );
@@ -275,9 +284,8 @@ export default function OnboardingFlow() {
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold font-headline">Passion Board</h3>
               <p className="text-sm text-muted-foreground">Select your interests.</p>
-              {errors.interests && <p className="text-xs text-destructive mt-2 font-medium">{errors.interests.message}</p>}
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto pr-2 no-scrollbar">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {INTEREST_CATEGORIES.map((cat) => (
                 <div 
                   key={cat.id} 
@@ -288,14 +296,9 @@ export default function OnboardingFlow() {
                   )}
                 >
                   <img src={cat.image} alt={cat.label} className="w-full h-32 object-cover" />
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-2 text-center">
-                    <span className="font-bold text-white text-xs">{cat.label}</span>
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-2 text-center text-white font-bold text-xs">
+                    {cat.label}
                   </div>
-                  {interests.includes(cat.id) && (
-                    <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -303,18 +306,12 @@ export default function OnboardingFlow() {
         );
       case 4:
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-10 h-10 text-primary" />
-              </div>
-              <h3 className="text-2xl font-bold font-headline">Verification</h3>
-              <p className="text-muted-foreground">Ready to launch your collaborative journey?</p>
+          <div className="space-y-8 animate-in fade-in duration-300 text-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-10 h-10 text-primary" />
             </div>
-            <div className="bg-primary/5 p-6 rounded-2xl border border-primary/20">
-               <p className="text-sm text-center font-bold">You've earned 100 Collab Points for joining!</p>
-               <p className="text-[10px] text-center text-muted-foreground mt-2">All data verified for {watch('email')}</p>
-            </div>
+            <h3 className="text-2xl font-bold font-headline">Verification Complete</h3>
+            <p className="text-muted-foreground">You've earned 100 Collab Points for joining! Ready to launch?</p>
           </div>
         );
       default:
@@ -340,9 +337,7 @@ export default function OnboardingFlow() {
             <CardTitle className="text-3xl font-bold font-headline">Onboarding</CardTitle>
           </CardHeader>
           <CardContent className="min-h-[400px] p-8">
-            <form onSubmit={handleSubmit(onFinalSubmit)}>
-              {renderStep()}
-            </form>
+            {renderStep()}
           </CardContent>
           <CardFooter className="flex justify-between border-t p-8 bg-muted/5">
             {step > 1 && <Button variant="outline" onClick={handleBack} disabled={isSubmitting}>Back</Button>}

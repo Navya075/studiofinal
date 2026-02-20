@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -11,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Layers, AlertCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from '@/hooks/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email("Invalid college email").endsWith(".edu", "Must be a .edu email"),
@@ -28,10 +30,24 @@ export default function LoginPage() {
 
   const onSubmit = (data: LoginValues) => {
     setIsLoading(true);
-    // Simulation
+    
     setTimeout(() => {
-      setIsLoading(false);
-      router.push('/dashboard');
+      // Local Database Check
+      const users = JSON.parse(localStorage.getItem('cc_users') || '[]');
+      const user = users.find((u: any) => u.email === data.email && u.password === data.password);
+
+      if (user) {
+        localStorage.setItem('cc_current_user', JSON.stringify(user));
+        toast({ title: "Success", description: `Welcome back, ${user.fullName}!` });
+        router.push('/dashboard');
+      } else {
+        setIsLoading(false);
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: "Invalid email or password. Please sign up if you don't have an account.",
+        });
+      }
     }, 1200);
   };
 
