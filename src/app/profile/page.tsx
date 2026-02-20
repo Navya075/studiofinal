@@ -32,14 +32,13 @@ import {
   Verified
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { PlaceHolderImages } from '@/placeholder-images';
 
 const MOCK_USER = {
   fullName: "John Doe",
   email: "john.doe@university.edu",
   university: "Stanford University",
   major: "Computer Science",
-  degree: "B.S.",
   graduationYear: "2026",
   bio: "Passionate about building scalable web applications and exploring the future of blockchain and AI. Always looking for innovative hackathon teams.",
   points: 2450,

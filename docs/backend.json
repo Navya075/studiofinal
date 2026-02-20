@@ -9,7 +9,6 @@
         "fullName": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "university": { "type": "string" },
-        "degree": { "type": "string" },
         "major": { "type": "string" },
         "graduationYear": { "type": "string" },
         "bio": { "type": "string" },
@@ -77,7 +76,7 @@
         "reviewerId": { "type": "string" },
         "revieweeId": { "type": "string" },
         "projectId": { "type": "string" },
-        "rating": { "type": "number" },
+        "rating": { "number": "number" },
         "comment": { "type": "string" },
         "pointsAwarded": { "type": "number" }
       }
