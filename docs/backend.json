@@ -45,7 +45,12 @@
         },
         "teamSize": { "type": "number" },
         "duration": { "type": "string" },
-        "ownerId": { "type": "string" }
+        "ownerId": { "type": "string" },
+        "memberIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of user UIDs who have joined the project"
+        }
       }
     },
     "PeerReview": {
@@ -76,7 +81,7 @@
     }
   },
   "auth": {
-    "providers": ["password", "google"]
+    "providers": ["password", "google", "anonymous"]
   },
   "firestore": {
     "/users/{userId}": {

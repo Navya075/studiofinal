@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -115,25 +116,17 @@ export default function OnboardingFlow() {
     try {
       let currentUser = user;
       
-      // Attempt anonymous sign in if no user exists
       if (!currentUser) {
         try {
           const cred = await signInAnonymously(auth);
           currentUser = cred.user;
         } catch (authError: any) {
-          if (authError.code === 'auth/api-key-not-valid') {
-            toast({
-              variant: "destructive",
-              title: "Firebase Config Error",
-              description: "The API key in src/firebase/config.ts is invalid. Please update it with your actual key from the Firebase Console.",
-            });
-          } else {
-            toast({
-              variant: "destructive",
-              title: "Authentication Failed",
-              description: authError.message || "Could not sign in. Please check your internet connection.",
-            });
-          }
+          console.error("Auth Error:", authError);
+          toast({
+            variant: "destructive",
+            title: "Authentication Failed",
+            description: "Please ensure 'Anonymous Authentication' is enabled in the Firebase Console and your API key is correct.",
+          });
           setIsSubmitting(false);
           return;
         }

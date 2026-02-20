@@ -1,12 +1,17 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, Calendar, Clock, ArrowRight, CheckCircle2, User, Loader2, XCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { initializeFirebase, useUser } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface PostCardProps {
   post: {
@@ -22,33 +27,61 @@ interface PostCardProps {
     dueDate: string;
     category: string;
     isVerified?: boolean;
+    memberIds: string[];
   };
-  initialJoined?: boolean;
-  onJoinSuccess?: () => void;
 }
 
 type JoinStatus = 'idle' | 'waiting' | 'accepted' | 'rejected';
 
-export function PostCard({ post, initialJoined = false, onJoinSuccess }: PostCardProps) {
-  const [status, setStatus] = useState<JoinStatus>(initialJoined ? 'accepted' : 'idle');
+export function PostCard({ post }: PostCardProps) {
+  const { db } = initializeFirebase();
+  const { user } = useUser();
+  const [status, setStatus] = useState<JoinStatus>('idle');
+
+  useEffect(() => {
+    if (user && post.memberIds?.includes(user.uid)) {
+      setStatus('accepted');
+    }
+  }, [user, post.memberIds]);
 
   const handleJoin = () => {
-    setStatus('waiting');
-    toast({
-      title: "Request Sent",
-      description: `You are now on the waiting list for ${post.title}.`,
-    });
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please sign in to join projects.",
+      });
+      return;
+    }
 
-    // Simulate outcome based on ID for demonstration
-    setTimeout(() => {
-      // For demo: projects with ID '1' or '3' are auto-accepted after delay
-      if (post.id === '1' || post.id === '3') {
-        setStatus('accepted');
-        onJoinSuccess?.();
-      } else {
-        setStatus('rejected');
-      }
-    }, 2000);
+    setStatus('waiting');
+    
+    const projectRef = doc(db, 'projects', post.id);
+
+    updateDoc(projectRef, {
+      memberIds: arrayUnion(user.uid)
+    })
+    .then(() => {
+      setStatus('accepted');
+      toast({
+        title: "Joined Project!",
+        description: `You are now a member of ${post.title}.`,
+      });
+    })
+    .catch(async (err) => {
+      const permissionError = new FirestorePermissionError({
+        path: projectRef.path,
+        operation: 'update',
+        requestResourceData: { memberIds: user.uid },
+      });
+      errorEmitter.emit('permission-error', permissionError);
+      setStatus('idle');
+      toast({
+        variant: "destructive",
+        title: "Join Failed",
+        description: "Could not join the project. Please try again.",
+      });
+    });
   };
 
   const renderActionButton = () => {
@@ -70,7 +103,7 @@ export function PostCard({ post, initialJoined = false, onJoinSuccess }: PostCar
             className="w-full h-11 rounded-xl gap-2 font-bold border-orange-200 bg-orange-50 text-orange-600"
           >
             <Loader2 className="w-4 h-4 animate-spin" />
-            Waiting List
+            Joining...
           </Button>
         );
       case 'accepted':
@@ -93,7 +126,7 @@ export function PostCard({ post, initialJoined = false, onJoinSuccess }: PostCar
             className="w-full h-11 rounded-xl gap-2 font-bold border-red-200 bg-red-50 text-red-600"
           >
             <XCircle className="w-4 h-4" />
-            Rejected
+            Full
           </Button>
         );
     }

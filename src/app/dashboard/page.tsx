@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -28,8 +29,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import { collection } from 'firebase/firestore';
-import { initializeFirebase, useCollection } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import { initializeFirebase, useCollection, useUser } from '@/firebase';
 
 const TABS = [
   { id: 'All Feed', label: 'All Feed', icon: <LayoutGrid className="w-4 h-4" /> },
@@ -41,22 +42,28 @@ const TABS = [
 
 export default function DashboardPage() {
   const { db } = initializeFirebase();
-  const projectsQuery = useMemo(() => collection(db, 'projects'), [db]);
-  const { data: dbProjects, loading } = useCollection(projectsQuery);
-
+  const { user } = useUser();
+  
   const [activeTab, setActiveTab] = useState('All Feed');
   const [filterVerified, setFilterVerified] = useState(false);
   const [filterUnverified, setFilterUnverified] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [joinedProjectIds, setJoinedProjectIds] = useState<string[]>([]);
 
+  // Main feed query
+  const projectsQuery = useMemo(() => collection(db, 'projects'), [db]);
+  const { data: dbProjects, loading: loadingAll } = useCollection(projectsQuery);
+
+  // Filtered logic
   const filteredProjects = useMemo(() => {
     if (!dbProjects) return [];
     
     return dbProjects.filter(project => {
       // Tab Filtering
       if (activeTab === 'Teams') {
-        if (!joinedProjectIds.includes(project.id)) return false;
+        // Only show projects where user is a member or owner
+        const isMember = project.memberIds?.includes(user?.uid);
+        const isOwner = project.ownerId === user?.uid;
+        if (!isMember && !isOwner) return false;
       } else if (activeTab === 'Technical' && project.type !== 'Hackathon' && project.type !== 'Startup') {
         return false;
       } else if (activeTab === 'Non-Technical' && project.type === 'Hackathon') {
@@ -77,11 +84,7 @@ export default function DashboardPage() {
 
       return true;
     });
-  }, [dbProjects, activeTab, filterVerified, filterUnverified, searchQuery, joinedProjectIds]);
-
-  const handleJoinSuccess = (projectId: string) => {
-    setJoinedProjectIds(prev => [...prev, projectId]);
-  };
+  }, [dbProjects, activeTab, filterVerified, filterUnverified, searchQuery, user]);
 
   const resetFilters = () => {
     setFilterVerified(false);
@@ -95,7 +98,18 @@ export default function DashboardPage() {
       <Navbar isDashboard />
       
       <main className="max-w-6xl mx-auto px-4 py-12">
-        {/* Search Bar Row */}
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-bold font-headline tracking-tight text-foreground">
+              Collaboration Feed
+            </h1>
+            <p className="text-muted-foreground text-lg">Find your next project or build a winning team.</p>
+          </div>
+          <PostCreationDialog />
+        </div>
+
+        {/* Search Bar Row - Below Header */}
         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6 w-full">
           <div className="relative group flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -145,17 +159,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-bold font-headline tracking-tight text-foreground">
-              Collaboration Feed
-            </h1>
-            <p className="text-muted-foreground text-lg">Find your next project or build a winning team.</p>
-          </div>
-          <PostCreationDialog />
-        </div>
-
         {/* Tabs Row */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-4 mb-10 no-scrollbar">
           {TABS.map(tab => (
@@ -182,7 +185,7 @@ export default function DashboardPage() {
 
         {/* Content Feed */}
         <div className="grid grid-cols-1 gap-6">
-          {loading ? (
+          {loadingAll ? (
             <div className="text-center py-24">Loading projects...</div>
           ) : filteredProjects.length > 0 ? (
             filteredProjects.map(project => (
@@ -195,15 +198,14 @@ export default function DashboardPage() {
                   timeLeft: 'Active',
                   summary: project.summary,
                   tags: project.requiredSkills || [],
-                  owner: project.ownerId === 'me' ? 'You' : 'Teammate',
-                  members: 1,
+                  owner: project.ownerId === user?.uid ? 'You' : 'Teammate',
+                  members: (project.memberIds?.length || 0) + 1,
                   maxMembers: project.teamSize || 4,
                   dueDate: project.duration || 'TBD',
                   category: project.type === 'Hackathon' ? 'Technical' : 'General',
-                  isVerified: project.isVerified
+                  isVerified: project.isVerified,
+                  memberIds: project.memberIds || []
                 }} 
-                initialJoined={joinedProjectIds.includes(project.id)} 
-                onJoinSuccess={() => handleJoinSuccess(project.id)}
               />
             ))
           ) : (
