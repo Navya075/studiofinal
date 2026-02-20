@@ -10,9 +10,6 @@ import { SessionCreationDialog } from '@/components/learn/SessionCreationDialog'
 import { 
   LayoutGrid, 
   Code, 
-  Zap,
-  Microscope,
-  Trophy,
   Users,
   CheckCircle2,
   RotateCcw,
@@ -44,21 +41,21 @@ export const MOCK_PROJECTS = [
     members: 2,
     maxMembers: 4,
     dueDate: 'Nov 12',
-    type: 'Hackathon',
+    category: 'Technical',
     isVerified: true,
   },
   {
     id: 'p2',
-    title: 'Sustainability Hub App',
+    title: 'Campus Marketing Campaign',
     status: 'Active',
     timeLeft: '5 days left',
-    summary: 'Building a mobile app to track campus recycling and reward green initiatives.',
-    tags: ['Flutter', 'Firebase', 'UI/UX'],
+    summary: 'Designing a strategic outreach program to increase student engagement for spring events.',
+    tags: ['Strategy', 'Social Media', 'Content'],
     owner: 'Sara Chen',
     members: 3,
     maxMembers: 5,
     dueDate: 'Nov 20',
-    type: 'Startup',
+    category: 'Non Technical',
     isVerified: false,
   },
   {
@@ -72,21 +69,21 @@ export const MOCK_PROJECTS = [
     members: 1,
     maxMembers: 3,
     dueDate: 'Dec 05',
-    type: 'Research',
+    category: 'Technical',
     isVerified: true,
   },
   {
     id: 'p4',
-    title: 'Quantum Computing Sim',
+    title: 'Sustainability Hub Design',
     status: 'Active',
     timeLeft: '10 days left',
-    summary: 'A visual simulator for basic quantum gates and circuit algorithms.',
-    tags: ['Qiskit', 'Python', 'React'],
-    owner: 'Dr. Smith',
+    summary: 'Building a visual design system and branding for the campus sustainability initiative.',
+    tags: ['UI/UX', 'Figma', 'Branding'],
+    owner: 'Mike Johnson',
     members: 1,
     maxMembers: 2,
     dueDate: 'Dec 15',
-    type: 'Competition',
+    category: 'Non Technical',
     isVerified: true,
   }
 ];
@@ -133,8 +130,8 @@ export default function DashboardPage() {
         if (!joinedIds.includes(project.id)) return false;
       } else if (activeTab === 'Learn') {
         return false;
-      } else if (activeTab !== 'All Feed' && project.type !== activeTab) {
-        return false;
+      } else if (activeTab === 'Technical' || activeTab === 'Non Technical') {
+        if (project.category !== activeTab) return false;
       }
 
       // Search Filtering
@@ -173,6 +170,7 @@ export default function DashboardPage() {
       owner: 'You',
       members: 1,
       timeLeft: 'Just launched',
+      category: newProject.type === 'Hackathon' || newProject.type === 'Research' ? 'Technical' : 'Non Technical'
     };
     setProjects([project, ...projects]);
     setJoinedIds(prev => [...prev, project.id]);
@@ -246,7 +244,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Tabs Row - Based on Project Domains */}
+        {/* Simplified Tabs Row */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-4 mb-10 no-scrollbar">
           {TABS.map(tab => (
             <Button
@@ -254,7 +252,7 @@ export default function DashboardPage() {
               variant="ghost"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "rounded-full h-11 px-5 text-sm font-semibold transition-all gap-2 shrink-0",
+                "rounded-full h-11 px-6 text-sm font-bold transition-all gap-2 shrink-0",
                 activeTab === tab.id 
                   ? "bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90" 
                   : "text-muted-foreground hover:bg-muted"
@@ -307,8 +305,8 @@ function EmptyState({ onReset }: { onReset: () => void }) {
         <Search className="w-10 h-10 text-muted-foreground/30" />
       </div>
       <div className="space-y-1">
-        <p className="text-lg font-bold">No missions found in this domain</p>
-        <p className="text-muted-foreground">Try adjusting your search or switching domains.</p>
+        <p className="text-lg font-bold">No missions found in this category</p>
+        <p className="text-muted-foreground">Try adjusting your search or switching filters.</p>
         <Button variant="link" onClick={onReset} className="text-primary mt-2 font-bold uppercase tracking-widest">Clear All Filters</Button>
       </div>
     </div>
@@ -317,11 +315,8 @@ function EmptyState({ onReset }: { onReset: () => void }) {
 
 const TABS = [
   { id: 'All Feed', label: 'All Feed', icon: <LayoutGrid className="w-4 h-4" /> },
-  { id: 'Hackathon', label: 'Hackathons', icon: <Code className="w-4 h-4" /> },
-  { id: 'Research', label: 'Research', icon: <Microscope className="w-4 h-4" /> },
-  { id: 'Startup', label: 'Startups', icon: <Zap className="w-4 h-4" /> },
-  { id: 'Competition', label: 'Competitions', icon: <Trophy className="w-4 h-4" /> },
-  { id: 'General Collaboration', label: 'General', icon: <Globe className="w-4 h-4" /> },
-  { id: 'Teams', label: 'Joined Teams', icon: <Users className="w-4 h-4" /> },
-  { id: 'Learn', label: 'Learn Hub', icon: <BookOpen className="w-4 h-4" /> },
+  { id: 'Technical', label: 'Technical', icon: <Code className="w-4 h-4" /> },
+  { id: 'Non Technical', label: 'Non Technical', icon: <Globe className="w-4 h-4" /> },
+  { id: 'Teams', label: 'Teams', icon: <Users className="w-4 h-4" /> },
+  { id: 'Learn', label: 'Learn', icon: <BookOpen className="w-4 h-4" /> },
 ];
