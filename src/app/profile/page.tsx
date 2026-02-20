@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -26,7 +27,9 @@ import {
   X,
   MessageSquare,
   Quote,
-  Plus
+  Plus,
+  BookOpen,
+  Verified
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -41,6 +44,7 @@ const MOCK_USER = {
   bio: "Passionate about building scalable web applications and exploring the future of blockchain and AI. Always looking for innovative hackathon teams.",
   points: 2450,
   rating: 4.8,
+  isEducator: true,
   skills: ["React", "Next.js", "TypeScript", "Python", "Tailwind CSS", "Node.js", "Firebase", "Solidity"],
   interests: ["Hackathons", "AI/ML", "Open Source", "Startups", "FinTech", "Cybersecurity"],
   username: "johndoe_dev"
@@ -81,7 +85,6 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   
-  // Image states
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [bannerImage, setBannerImage] = useState<string | null>(null);
   
@@ -162,7 +165,6 @@ export default function ProfilePage() {
       >
         <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
         
-        {/* Banner Edit Buttons */}
         <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex gap-2">
           <input 
             type="file" 
@@ -192,7 +194,6 @@ export default function ProfilePage() {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 relative h-full">
-          {/* Centered Avatar with Edit Overlay */}
           <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 group/avatar">
             <div className="relative">
               <Avatar className="w-40 h-40 md:w-56 md:h-56 border-[10px] border-background shadow-2xl overflow-hidden bg-background">
@@ -202,7 +203,6 @@ export default function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
               
-              {/* Avatar Edit Overlay */}
               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity rounded-full cursor-pointer">
                 <div className="flex gap-2">
                   <Button
@@ -243,12 +243,22 @@ export default function ProfilePage() {
           {/* Centered Identity Section */}
           <div className="flex flex-col items-center text-center space-y-6 max-w-3xl w-full">
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-bold font-headline tracking-tight text-foreground">{userData.fullName}</h1>
+              <div className="flex items-center justify-center gap-2">
+                <h1 className="text-5xl md:text-7xl font-bold font-headline tracking-tight text-foreground">{userData.fullName}</h1>
+                {userData.isEducator && (
+                  <Verified className="w-10 h-10 text-primary animate-in zoom-in duration-700" title="Verified Educator" />
+                )}
+              </div>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-xl">
                   <GraduationCap className="w-7 h-7" />
                   <span>{userData.major} Student</span>
                 </div>
+                {userData.isEducator && (
+                  <Badge className="bg-primary text-white border-primary/20 px-5 py-2 rounded-full font-black text-xs shadow-lg shadow-primary/20 gap-2">
+                    <BookOpen className="w-4 h-4" /> VERIFIED EDUCATOR
+                  </Badge>
+                )}
                 <div className="flex items-center gap-2 bg-yellow-500/10 text-yellow-600 px-5 py-2 rounded-full border border-yellow-500/20 font-black text-sm shadow-sm">
                   <Star className="w-5 h-5 fill-yellow-500" />
                   <span>{userData.rating || '4.5'} AVG RATING</span>
@@ -256,7 +266,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Aesthetic Profile Link Display */}
             <div className="flex items-center justify-center gap-2 bg-white/60 backdrop-blur-sm px-8 py-4 rounded-full border border-primary/10 transition-all hover:bg-white/80 group shadow-soft">
               <LinkIcon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               <span className="text-sm font-bold text-muted-foreground tracking-tight">campusconnect.app/u/{userData.username || 'johndoe'}</span>
@@ -269,7 +278,6 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* Contact Details Grid */}
             <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 text-sm text-muted-foreground font-bold uppercase tracking-widest">
               <div className="flex items-center gap-2.5">
                 <MapPin className="w-5 h-5 text-primary" />
@@ -285,7 +293,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Centered Bio */}
             <div className="relative w-full">
               <p className="text-xl leading-relaxed text-muted-foreground bg-white/30 backdrop-blur-md p-12 rounded-[4rem] italic border border-primary/10 shadow-soft max-w-3xl mx-auto relative z-10">
                 <Quote className="absolute -top-6 -left-6 w-12 h-12 text-primary/10 -z-10" />
@@ -293,7 +300,6 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            {/* Action Buttons & Aesthetic Links */}
             <div className="flex flex-col items-center gap-10 pt-6">
               <Button className="rounded-[2rem] h-16 px-16 text-xl font-black bg-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1.5 transition-all" asChild>
                 <Link href="/settings">Update Profile Details</Link>
@@ -313,10 +319,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Core Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 w-full">
-            
-            {/* Left Column - Stats & Vision */}
             <div className="lg:col-span-4 space-y-10">
               <Card className="border-none shadow-soft overflow-hidden bg-white/70 backdrop-blur-sm rounded-[3rem] p-4" asChild>
                 <div>
@@ -344,7 +347,6 @@ export default function ProfilePage() {
                 </div>
               </Card>
 
-              {/* Passion Areas Cards */}
               <Card className="border-none shadow-soft bg-white/70 backdrop-blur-sm rounded-[3rem] p-4" asChild>
                 <div>
                   <CardHeader className="pb-6">
@@ -365,10 +367,7 @@ export default function ProfilePage() {
               </Card>
             </div>
 
-            {/* Right Column - Domain Skills & Roadmap & Feedback */}
             <div className="lg:col-span-8 space-y-20">
-              
-              {/* Skills Grid */}
               <section className="space-y-10">
                 <div className="flex items-center justify-between border-b-4 border-primary/5 pb-8">
                   <h2 className="text-4xl font-black font-headline flex items-center gap-6">
@@ -392,7 +391,6 @@ export default function ProfilePage() {
                 </div>
               </section>
 
-              {/* Teammate Feedback Section */}
               <section className="space-y-10">
                 <div className="flex items-center justify-between border-b-4 border-primary/5 pb-8">
                   <h2 className="text-4xl font-black font-headline flex items-center gap-6">
@@ -433,7 +431,6 @@ export default function ProfilePage() {
                 </div>
               </section>
 
-              {/* Aesthetic Roadmap Grid */}
               <section className="space-y-10">
                 <div className="flex items-center justify-between border-b-4 border-primary/5 pb-8">
                   <h2 className="text-4xl font-black font-headline flex items-center gap-6">
@@ -479,7 +476,6 @@ export default function ProfilePage() {
                     </Card>
                   ))}
                   
-                  {/* Styled Add Project Card */}
                   <Card className="border-[6px] border-dashed border-primary/5 bg-transparent shadow-none flex flex-col items-center justify-center p-12 text-center space-y-8 hover:border-primary/30 hover:bg-primary/[0.03] transition-all cursor-pointer rounded-[4rem] group min-h-[400px]" asChild>
                     <Link href="/dashboard">
                       <div className="w-24 h-24 rounded-[2.5rem] bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-700 shadow-inner">

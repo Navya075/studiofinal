@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -5,6 +6,8 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { PostCard } from '@/components/dashboard/PostCard';
 import { PostCreationDialog } from '@/components/dashboard/PostCreationDialog';
+import { LearnCard } from '@/components/learn/LearnCard';
+import { SessionCreationDialog } from '@/components/learn/SessionCreationDialog';
 import { 
   LayoutGrid, 
   Code, 
@@ -16,7 +19,8 @@ import {
   RotateCcw,
   Search,
   X,
-  AlertCircle
+  AlertCircle,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -74,13 +78,38 @@ export const MOCK_PROJECTS = [
   }
 ];
 
+// Mock Workshops for the "Learn" tab
+const MOCK_WORKSHOPS = [
+  {
+    id: 'w1',
+    title: 'Mastering Git & GitHub',
+    instructor: 'Alex Rivers',
+    topic: 'Version Control',
+    description: 'Learn the essentials of branching, merging, and collaboration in a production environment.',
+    scheduledAt: new Date(Date.now() + 600000).toISOString(), // 10 mins from now
+    attendees: 12,
+    meetLink: 'meet.google.com/abc-defg-hij'
+  },
+  {
+    id: 'w2',
+    title: 'Intro to UI/UX with Figma',
+    instructor: 'Mike Johnson',
+    topic: 'Design',
+    description: 'A hands-on session on creating aesthetic prototypes for your campus projects.',
+    scheduledAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago (Live)
+    attendees: 45,
+    meetLink: 'meet.google.com/xyz-uvwx-yz'
+  }
+];
+
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('All Feed');
   const [filterVerified, setFilterVerified] = useState(false);
   const [filterUnverified, setFilterUnverified] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [joinedIds, setJoinedIds] = useState<string[]>(['p3']); // Mocking the user is already in p3
+  const [joinedIds, setJoinedIds] = useState<string[]>(['p3']);
   const [projects, setProjects] = useState(MOCK_PROJECTS);
+  const [workshops, setWorkshops] = useState(MOCK_WORKSHOPS);
 
   const handleJoinProject = (id: string) => {
     setJoinedIds(prev => [...prev, id]);
@@ -88,7 +117,6 @@ export default function DashboardPage() {
 
   const filteredProjects = useMemo(() => {
     return projects.filter(project => {
-      // Tab Filtering
       if (activeTab === 'Teams') {
         if (!joinedIds.includes(project.id)) return false;
       } else if (activeTab === 'Technical' && project.category !== 'Technical') {
@@ -97,7 +125,8 @@ export default function DashboardPage() {
         return false;
       }
 
-      // Search Filtering
+      if (activeTab === 'Learn') return false; // Handled separately
+
       const matchesSearch = 
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,13 +134,20 @@ export default function DashboardPage() {
 
       if (!matchesSearch) return false;
 
-      // Dropdown Filters
       if (filterVerified && !filterUnverified && !project.isVerified) return false;
       if (filterUnverified && !filterVerified && project.isVerified) return false;
 
       return true;
     });
   }, [projects, activeTab, filterVerified, filterUnverified, searchQuery, joinedIds]);
+
+  const filteredWorkshops = useMemo(() => {
+    if (activeTab !== 'Learn') return [];
+    return workshops.filter(w => 
+      w.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      w.instructor.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [workshops, activeTab, searchQuery]);
 
   const resetFilters = () => {
     setFilterVerified(false);
@@ -133,6 +169,17 @@ export default function DashboardPage() {
     setJoinedIds(prev => [...prev, project.id]);
   };
 
+  const handleCreateSession = (newSession: any) => {
+    const session = {
+      ...newSession,
+      id: `w${Date.now()}`,
+      instructor: 'You',
+      attendees: 0,
+      meetLink: `meet.google.com/${Math.random().toString(36).substring(7)}`
+    };
+    setWorkshops([session, ...workshops]);
+  };
+
   return (
     <div className="min-h-screen bg-background pt-16">
       <Navbar isDashboard />
@@ -142,32 +189,30 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div className="space-y-1">
             <h1 className="text-4xl font-bold font-headline tracking-tight text-foreground">
-              Collaboration Feed
+              {activeTab === 'Learn' ? 'Education Hub' : 'Collaboration Feed'}
             </h1>
-            <p className="text-muted-foreground text-lg">Find your next project or build a winning team.</p>
+            <p className="text-muted-foreground text-lg">
+              {activeTab === 'Learn' ? 'Learn from peers or host your own masterclass.' : 'Find your next project or build a winning team.'}
+            </p>
           </div>
-          <PostCreationDialog onCreate={handleCreateProject} />
+          {activeTab === 'Learn' ? (
+            <SessionCreationDialog onCreate={handleCreateSession} />
+          ) : (
+            <PostCreationDialog onCreate={handleCreateProject} />
+          )}
         </div>
 
-        {/* Search Bar Row - Below Header */}
+        {/* Search Bar Row */}
         <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6 w-full">
           <div className="relative group flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
               type="text"
-              placeholder="Search projects, skills, or tags..."
+              placeholder={activeTab === 'Learn' ? "Search workshops or topics..." : "Search projects, skills, or tags..."}
               className="pl-12 h-12 bg-white border-muted/30 rounded-full shadow-soft focus-visible:ring-primary/20 w-full text-base transition-all hover:border-primary/30"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')} 
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -178,7 +223,7 @@ export default function DashboardPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 mt-2">
-                <DropdownMenuLabel>Filter Projects</DropdownMenuLabel>
+                <DropdownMenuLabel>Filter Feed</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuCheckboxItem 
                   checked={filterVerified} 
@@ -186,13 +231,6 @@ export default function DashboardPage() {
                   className="gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4 text-primary" /> Verified Only
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem 
-                  checked={filterUnverified} 
-                  onCheckedChange={setFilterUnverified} 
-                  className="gap-2"
-                >
-                  <AlertCircle className="w-4 h-4 text-muted-foreground" /> Unverified Only
                 </DropdownMenuCheckboxItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -225,33 +263,45 @@ export default function DashboardPage() {
 
         {/* Content Feed */}
         <div className="grid grid-cols-1 gap-6">
-          {filteredProjects.length > 0 ? (
-            filteredProjects.map(project => (
-              <PostCard 
-                key={project.id} 
-                post={project} 
-                isJoined={joinedIds.includes(project.id)}
-                onJoin={() => handleJoinProject(project.id)}
-              />
-            ))
+          {activeTab === 'Learn' ? (
+             filteredWorkshops.length > 0 ? (
+               filteredWorkshops.map(workshop => (
+                 <LearnCard key={workshop.id} workshop={workshop} />
+               ))
+             ) : (
+               <EmptyState onReset={resetFilters} />
+             )
           ) : (
-            <div className="text-center py-24 bg-muted/5 rounded-3xl border-2 border-dashed flex flex-col items-center justify-center space-y-4">
-              <div className="p-5 bg-muted/10 rounded-full">
-                <Search className="w-10 h-10 text-muted-foreground/30" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-lg font-bold">
-                  {activeTab === 'Teams' ? "You haven't joined any teams yet" : "No results matching your criteria"}
-                </p>
-                <p className="text-muted-foreground">
-                  {activeTab === 'Teams' ? "Explore the feed to find projects to collaborate on." : "Try adjusting your search or filters."}
-                </p>
-                <Button variant="link" onClick={resetFilters} className="text-primary mt-2">Clear All Filters</Button>
-              </div>
-            </div>
+            filteredProjects.length > 0 ? (
+              filteredProjects.map(project => (
+                <PostCard 
+                  key={project.id} 
+                  post={project} 
+                  isJoined={joinedIds.includes(project.id)}
+                  onJoin={() => handleJoinProject(project.id)}
+                />
+              ))
+            ) : (
+              <EmptyState onReset={resetFilters} />
+            )
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function EmptyState({ onReset }: { onReset: () => void }) {
+  return (
+    <div className="text-center py-24 bg-muted/5 rounded-3xl border-2 border-dashed flex flex-col items-center justify-center space-y-4">
+      <div className="p-5 bg-muted/10 rounded-full">
+        <Search className="w-10 h-10 text-muted-foreground/30" />
+      </div>
+      <div className="space-y-1">
+        <p className="text-lg font-bold">No results matching your criteria</p>
+        <p className="text-muted-foreground">Try adjusting your search or filters.</p>
+        <Button variant="link" onClick={onReset} className="text-primary mt-2">Clear All Filters</Button>
+      </div>
     </div>
   );
 }
@@ -260,6 +310,6 @@ const TABS = [
   { id: 'All Feed', label: 'All Feed', icon: <LayoutGrid className="w-4 h-4" /> },
   { id: 'Technical', label: 'Technical', icon: <Code className="w-4 h-4" /> },
   { id: 'Non-Technical', label: 'Non-Technical', icon: <PenTool className="w-4 h-4" /> },
-  { id: 'My Badges', label: 'My Badges', icon: <Sparkles className="w-4 h-4" /> },
   { id: 'Teams', label: 'Teams', icon: <Users className="w-4 h-4" /> },
+  { id: 'Learn', label: 'Learn', icon: <BookOpen className="w-4 h-4" /> },
 ];

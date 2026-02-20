@@ -15,6 +15,7 @@
         "bio": { "type": "string" },
         "rating": { "type": "number", "description": "Average peer rating out of 5" },
         "points": { "type": "number", "description": "Total collaboration points earned" },
+        "isEducator": { "type": "boolean", "description": "Whether the user has a verified educator status" },
         "skills": {
           "type": "array",
           "items": { "type": "string" }
@@ -51,6 +52,21 @@
           "items": { "type": "string" },
           "description": "List of user UIDs who have joined the project"
         }
+      }
+    },
+    "Workshop": {
+      "title": "Educational Workshop",
+      "description": "A peer-to-peer teaching session.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "topic": { "type": "string" },
+        "instructorId": { "type": "string" },
+        "instructorName": { "type": "string" },
+        "description": { "type": "string" },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "meetLink": { "type": "string" },
+        "attendeeCount": { "type": "number" }
       }
     },
     "PeerReview": {
@@ -99,6 +115,10 @@
     "/projects/{projectId}/reviews": {
       "schema": "#/backend/entities/PeerReview",
       "description": "Post-project teammate reviews"
+    },
+    "/workshops/{workshopId}": {
+      "schema": "#/backend/entities/Workshop",
+      "description": "Educational workshops and teaching sessions"
     }
   }
 }
