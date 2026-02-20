@@ -17,6 +17,12 @@
       "description": "Project concept art",
       "imageUrl": "https://images.unsplash.com/photo-1760531932521-8eb5a064dbca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx0ZWNobm9sb2d5JTIwcHJvamVjdHxlbnwwfHx8fDE3NzE1NzkyMjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "technology project"
+    },
+    {
+      "id": "default-banner",
+      "description": "Abstract aesthetic architectural background",
+      "imageUrl": "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMGJhbm5lcnxlbnwwfHx8fDE3NzE1OTI2MjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract banner"
     }
   ]
 }
