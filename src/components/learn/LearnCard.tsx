@@ -1,16 +1,16 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, User, ExternalLink, GraduationCap, Lock, Globe } from 'lucide-react';
+import { Calendar, Clock, User, ExternalLink, Lock, Globe, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, isAfter, isBefore, parseISO } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
 
 interface LearnCardProps {
-  workshop: {
+  session: {
     id: string;
     title: string;
     instructor: string;
@@ -22,16 +22,17 @@ interface LearnCardProps {
   };
 }
 
-export function LearnCard({ workshop }: LearnCardProps) {
+export function LearnCard({ session }: LearnCardProps) {
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [isReleased, setIsReleased] = useState(false);
   const [timeToStart, setTimeToStart] = useState('');
 
-  const scheduledTime = parseISO(workshop.scheduledAt);
+  const scheduledTime = parseISO(session.scheduledAt);
 
   useEffect(() => {
     const checkTime = () => {
       const now = new Date();
-      // Link is released if it is exactly at or after the scheduled time
       setIsReleased(isAfter(now, scheduledTime));
       
       if (isBefore(now, scheduledTime)) {
@@ -39,9 +40,9 @@ export function LearnCard({ workshop }: LearnCardProps) {
         const mins = Math.floor(diff / 60000);
         const hours = Math.floor(mins / 60) ;
         if (hours > 0) {
-          setTimeToStart(`Available in ${hours}h ${mins % 60}m`);
+          setTimeToStart(`Link releases in ${hours}h ${mins % 60}m`);
         } else {
-          setTimeToStart(`Available in ${mins}m`);
+          setTimeToStart(`Link releases in ${mins}m`);
         }
       } else {
         setTimeToStart('Session is Live!');
@@ -49,9 +50,33 @@ export function LearnCard({ workshop }: LearnCardProps) {
     };
 
     checkTime();
-    const interval = setInterval(checkTime, 10000); // Check every 10s
+    const interval = setInterval(checkTime, 10000);
     return () => clearInterval(interval);
   }, [scheduledTime]);
+
+  const handleRegister = () => {
+    setIsRegistering(true);
+    setTimeout(() => {
+      setIsRegistered(true);
+      setIsRegistering(false);
+      toast({
+        title: "Registered Successfully",
+        description: `You are now on the list for ${session.title}.`,
+      });
+    }, 1000);
+  };
+
+  const handleEnter = () => {
+    if (!isReleased) {
+      toast({
+        variant: "destructive",
+        title: "Protocol: Access Restricted",
+        description: `Link will be released on ${format(scheduledTime, 'MMM dd @ hh:mm a')}.`,
+      });
+      return;
+    }
+    window.open(`https://${session.meetLink}`, '_blank');
+  };
 
   return (
     <Card className="overflow-hidden border-none shadow-soft hover:shadow-lg transition-all duration-300 w-full bg-white/70 backdrop-blur-sm group">
@@ -60,20 +85,25 @@ export function LearnCard({ workshop }: LearnCardProps) {
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-3 flex-wrap">
               <h3 className="text-2xl font-bold font-headline text-foreground group-hover:text-primary transition-colors">
-                {workshop.title}
+                {session.title}
               </h3>
               <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/10 font-black text-[10px] uppercase tracking-widest">
-                {workshop.topic}
+                {session.topic}
               </Badge>
               {isReleased && (
                 <Badge className="bg-green-500 text-white animate-pulse font-black text-[10px] uppercase tracking-widest">
                   LIVE NOW
                 </Badge>
               )}
+              {isRegistered && (
+                <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 font-black text-[10px] uppercase tracking-widest gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> REGISTERED
+                </Badge>
+              )}
             </div>
 
             <p className="text-base text-muted-foreground leading-relaxed max-w-2xl">
-              {workshop.description}
+              {session.description}
             </p>
 
             <div className="flex flex-wrap items-center gap-6 pt-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
@@ -81,7 +111,7 @@ export function LearnCard({ workshop }: LearnCardProps) {
                 <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
                   <User className="w-3.5 h-3.5 text-primary" />
                 </div>
-                <span>Instructor: <span className="text-primary">{workshop.instructor}</span></span>
+                <span>Instructor: <span className="text-primary">{session.instructor}</span></span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-primary" />
@@ -96,36 +126,44 @@ export function LearnCard({ workshop }: LearnCardProps) {
 
           <div className="lg:w-64 flex flex-col items-center lg:items-end justify-center gap-4 shrink-0 lg:border-l lg:pl-8 border-primary/5">
             <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-2">
-              {isReleased ? "Secure Meeting Link" : "Access Protocol"}
+              {isRegistered ? "Expertise Protocol" : "Join the Session"}
             </div>
             
-            {isReleased ? (
+            {!isRegistered ? (
               <Button 
+                onClick={handleRegister}
+                disabled={isRegistering}
                 className="w-full h-14 rounded-2xl bg-primary text-white shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all font-black uppercase tracking-widest gap-2"
-                asChild
               >
-                <a href={`https://${workshop.meetLink}`} target="_blank" rel="noopener noreferrer">
-                  Join Workshop <ExternalLink className="w-4 h-4" />
-                </a>
+                {isRegistering ? <Loader2 className="w-4 h-4 animate-spin" /> : "Register Now"}
               </Button>
             ) : (
               <div className="w-full space-y-3">
                 <Button 
-                  disabled
-                  className="w-full h-14 rounded-2xl bg-muted/20 text-muted-foreground border-2 border-dashed border-muted-foreground/20 font-black uppercase tracking-widest gap-2 cursor-not-allowed"
+                  onClick={handleEnter}
+                  variant={isReleased ? "default" : "outline"}
+                  className={cn(
+                    "w-full h-14 rounded-2xl font-black uppercase tracking-widest gap-2 transition-all",
+                    isReleased 
+                      ? "bg-primary text-white shadow-xl shadow-primary/20 hover:-translate-y-1" 
+                      : "border-2 border-dashed border-primary/20 text-primary bg-primary/5 hover:bg-primary/10"
+                  )}
                 >
-                  <Lock className="w-4 h-4" /> Link Released @ Time
+                  {isReleased ? <ExternalLink className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                  Enter Session
                 </Button>
-                <p className="text-[10px] font-bold text-primary text-center italic">
-                  {timeToStart}
-                </p>
+                {!isReleased && (
+                  <p className="text-[10px] font-bold text-primary text-center italic flex items-center justify-center gap-1.5">
+                    <AlertCircle className="w-3 h-3" /> {timeToStart}
+                  </p>
+                )}
               </div>
             )}
             
             <div className="flex items-center gap-2 mt-2">
               <Globe className="w-3.5 h-3.5 text-muted-foreground" />
               <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                {workshop.attendees} Students Registered
+                {session.attendees + (isRegistered ? 1 : 0)} Students Enrolled
               </span>
             </div>
           </div>

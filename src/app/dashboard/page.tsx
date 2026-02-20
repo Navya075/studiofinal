@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -20,7 +19,8 @@ import {
   Search,
   X,
   AlertCircle,
-  BookOpen
+  BookOpen,
+  GraduationCap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -78,20 +78,19 @@ export const MOCK_PROJECTS = [
   }
 ];
 
-// Mock Workshops for the "Learn" tab
-const MOCK_WORKSHOPS = [
+const MOCK_SESSIONS = [
   {
-    id: 'w1',
+    id: 's1',
     title: 'Mastering Git & GitHub',
     instructor: 'Alex Rivers',
     topic: 'Version Control',
     description: 'Learn the essentials of branching, merging, and collaboration in a production environment.',
-    scheduledAt: new Date(Date.now() + 600000).toISOString(), // 10 mins from now
+    scheduledAt: new Date(Date.now() + 1800000).toISOString(), // 30 mins from now
     attendees: 12,
     meetLink: 'meet.google.com/abc-defg-hij'
   },
   {
-    id: 'w2',
+    id: 's2',
     title: 'Intro to UI/UX with Figma',
     instructor: 'Mike Johnson',
     topic: 'Design',
@@ -109,7 +108,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [joinedIds, setJoinedIds] = useState<string[]>(['p3']);
   const [projects, setProjects] = useState(MOCK_PROJECTS);
-  const [workshops, setWorkshops] = useState(MOCK_WORKSHOPS);
+  const [sessions, setSessions] = useState(MOCK_SESSIONS);
 
   const handleJoinProject = (id: string) => {
     setJoinedIds(prev => [...prev, id]);
@@ -125,7 +124,7 @@ export default function DashboardPage() {
         return false;
       }
 
-      if (activeTab === 'Learn') return false; // Handled separately
+      if (activeTab === 'Learn') return false;
 
       const matchesSearch = 
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -141,13 +140,13 @@ export default function DashboardPage() {
     });
   }, [projects, activeTab, filterVerified, filterUnverified, searchQuery, joinedIds]);
 
-  const filteredWorkshops = useMemo(() => {
+  const filteredSessions = useMemo(() => {
     if (activeTab !== 'Learn') return [];
-    return workshops.filter(w => 
-      w.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.instructor.toLowerCase().includes(searchQuery.toLowerCase())
+    return sessions.filter(s => 
+      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.instructor.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [workshops, activeTab, searchQuery]);
+  }, [sessions, activeTab, searchQuery]);
 
   const resetFilters = () => {
     setFilterVerified(false);
@@ -172,12 +171,12 @@ export default function DashboardPage() {
   const handleCreateSession = (newSession: any) => {
     const session = {
       ...newSession,
-      id: `w${Date.now()}`,
+      id: `s${Date.now()}`,
       instructor: 'You',
       attendees: 0,
       meetLink: `meet.google.com/${Math.random().toString(36).substring(7)}`
     };
-    setWorkshops([session, ...workshops]);
+    setSessions([session, ...sessions]);
   };
 
   return (
@@ -192,7 +191,7 @@ export default function DashboardPage() {
               {activeTab === 'Learn' ? 'Education Hub' : 'Collaboration Feed'}
             </h1>
             <p className="text-muted-foreground text-lg">
-              {activeTab === 'Learn' ? 'Learn from peers or host your own masterclass.' : 'Find your next project or build a winning team.'}
+              {activeTab === 'Learn' ? 'Learn from verified educators or share your own expertise.' : 'Find your next project or build a winning team.'}
             </p>
           </div>
           {activeTab === 'Learn' ? (
@@ -208,7 +207,7 @@ export default function DashboardPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input 
               type="text"
-              placeholder={activeTab === 'Learn' ? "Search workshops or topics..." : "Search projects, skills, or tags..."}
+              placeholder={activeTab === 'Learn' ? "Search expertise, topics, or educators..." : "Search projects, skills, or tags..."}
               className="pl-12 h-12 bg-white border-muted/30 rounded-full shadow-soft focus-visible:ring-primary/20 w-full text-base transition-all hover:border-primary/30"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -264,9 +263,9 @@ export default function DashboardPage() {
         {/* Content Feed */}
         <div className="grid grid-cols-1 gap-6">
           {activeTab === 'Learn' ? (
-             filteredWorkshops.length > 0 ? (
-               filteredWorkshops.map(workshop => (
-                 <LearnCard key={workshop.id} workshop={workshop} />
+             filteredSessions.length > 0 ? (
+               filteredSessions.map(session => (
+                 <LearnCard key={session.id} session={session} />
                ))
              ) : (
                <EmptyState onReset={resetFilters} />
