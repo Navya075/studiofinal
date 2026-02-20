@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Bell, User, LogOut, Settings, Trophy, Check, MessageSquare, Info, AlertTriangle } from 'lucide-react';
+import { User, LogOut, Settings, Trophy } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import {
   DropdownMenu,
@@ -13,9 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -23,26 +21,11 @@ interface NavbarProps {
   isDashboard?: boolean;
 }
 
-interface UserData {
-  fullName: string;
-  points: number;
-}
-
 export function Navbar({ isDashboard = false }: NavbarProps) {
   const router = useRouter();
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-    const stored = localStorage.getItem('cc_current_user');
-    if (stored) {
-      setUserData(JSON.parse(stored));
-    }
-  }, []);
+  const [userData] = useState({ fullName: "John Doe", points: 240 });
 
   const handleLogout = () => {
-    localStorage.removeItem('cc_current_user');
     router.push('/');
   };
 
@@ -79,18 +62,16 @@ export function Navbar({ isDashboard = false }: NavbarProps) {
       <div className="flex items-center gap-3">
         <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
           <Trophy className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold text-primary uppercase">{userData?.points || 0} PTS</span>
+          <span className="text-xs font-bold text-primary uppercase">{userData.points} PTS</span>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="p-1 rounded-full flex items-center gap-2 hover:bg-muted">
               <Avatar className="w-8 h-8 border shadow-sm">
-                <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-                  {userData?.fullName?.split(' ').map(n => n[0]).join('') || 'U'}
-                </AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">JD</AvatarFallback>
               </Avatar>
-              <span className="hidden md:block text-sm font-bold text-foreground pr-2">{userData?.fullName || 'User'}</span>
+              <span className="hidden md:block text-sm font-bold text-foreground pr-2">{userData.fullName}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 mt-1 shadow-xl border-muted/20">

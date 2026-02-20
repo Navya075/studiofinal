@@ -2,52 +2,26 @@
 "use client";
 
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Layers, AlertCircle, Loader2 } from 'lucide-react';
+import { Layers, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 
-const loginSchema = z.object({
-  email: z.string().email("Invalid college email").endsWith(".edu", "Must be a .edu email"),
-  password: z.string().min(6, "Password must be at least 6 characters")
-});
-
-type LoginValues = z.infer<typeof loginSchema>;
-
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginValues>({
-    resolver: zodResolver(loginSchema)
-  });
 
-  const onSubmit = (data: LoginValues) => {
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     
     setTimeout(() => {
-      // Local Database Check
-      const users = JSON.parse(localStorage.getItem('cc_users') || '[]');
-      const user = users.find((u: any) => u.email === data.email && u.password === data.password);
-
-      if (user) {
-        localStorage.setItem('cc_current_user', JSON.stringify(user));
-        toast({ title: "Success", description: `Welcome back, ${user.fullName}!` });
-        router.push('/dashboard');
-      } else {
-        setIsLoading(false);
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: "Invalid email or password. Please sign up if you don't have an account.",
-        });
-      }
+      toast({ title: "Welcome back!", description: "Successfully logged in as John Doe." });
+      router.push('/dashboard');
     }, 1200);
   };
 
@@ -71,38 +45,17 @@ export default function LoginPage() {
             <CardDescription>Enter your college email and password</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">College Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="student@university.edu" 
-                  {...register('email')}
-                  className={errors.email ? "border-destructive" : ""}
-                />
-                {errors.email && (
-                  <p className="text-xs text-destructive font-medium flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {errors.email.message}
-                  </p>
-                )}
+                <Input id="email" type="email" placeholder="student@university.edu" defaultValue="student@university.edu" />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="text-sm text-tech hover:underline">Forgot password?</Link>
+                  <Link href="#" className="text-sm text-primary hover:underline">Forgot password?</Link>
                 </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  {...register('password')}
-                  className={errors.password ? "border-destructive" : ""}
-                />
-                {errors.password && (
-                  <p className="text-xs text-destructive font-medium flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {errors.password.message}
-                  </p>
-                )}
+                <Input id="password" type="password" defaultValue="password123" />
               </div>
               <Button 
                 type="submit" 
@@ -115,7 +68,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex justify-center border-t py-6">
             <p className="text-sm text-muted-foreground">
-              Don't have an account? <Link href="/signup" className="text-tech font-semibold hover:underline">Sign Up</Link>
+              Don't have an account? <Link href="/signup" className="text-primary font-semibold hover:underline">Sign Up</Link>
             </p>
           </CardFooter>
         </Card>

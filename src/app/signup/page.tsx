@@ -4,9 +4,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -26,13 +23,7 @@ import {
   GraduationCap,
   X,
   Trophy,
-  Activity,
-  Music,
-  Camera,
-  Layers,
-  Grid,
-  Check,
-  AlertCircle
+  Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -57,120 +48,31 @@ const NON_TECH_SKILLS = [
   'UI/UX', 'User Research'
 ];
 
-const onboardingSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  email: z.string().email("Invalid email address").endsWith(".edu", "Please use your university (.edu) email"),
-  university: z.string().min(2, "University name is required"),
-  major: z.string().min(2, "Major is required"),
-  degree: z.string().min(2, "Degree is required"),
-  graduationYear: z.string().regex(/^\d{4}$/, "Must be a 4-digit year"),
-  bio: z.string().min(10, "Bio must be at least 10 characters").max(200, "Bio must be under 200 characters"),
-  skills: z.array(z.string()).min(1, "Select at least one skill"),
-  interests: z.array(z.string()).min(1, "Select at least one interest"),
-  password: z.string().min(6, "Password must be at least 6 characters")
-});
-
-type OnboardingValues = z.infer<typeof onboardingSchema>;
-
 export default function OnboardingFlow() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [skills, setSkills] = useState<string[]>([]);
+  const [interests, setInterests] = useState<string[]>([]);
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-    trigger
-  } = useForm<OnboardingValues>({
-    resolver: zodResolver(onboardingSchema),
-    mode: 'onChange',
-    defaultValues: {
-      fullName: '',
-      email: '',
-      university: '',
-      major: '',
-      degree: '',
-      graduationYear: '',
-      bio: '',
-      skills: [],
-      interests: []
-    }
-  });
-
-  const skills = watch('skills');
-  const interests = watch('interests');
-
-  const handleNext = async () => {
-    let fieldsToValidate: (keyof OnboardingValues)[] = [];
-    if (step === 1) fieldsToValidate = ['skills'];
-    if (step === 2) fieldsToValidate = ['fullName', 'email', 'password', 'university', 'major', 'degree', 'graduationYear', 'bio'];
-    if (step === 3) fieldsToValidate = ['interests'];
-
-    const isStepValid = await trigger(fieldsToValidate);
-    if (isStepValid) {
-      setStep(step + 1);
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Validation Error",
-        description: "Please fix the errors before proceeding.",
-      });
-    }
-  };
-
+  const handleNext = () => setStep(step + 1);
   const handleBack = () => setStep(step - 1);
 
   const toggleSkill = (skill: string) => {
-    const current = [...skills];
-    const index = current.indexOf(skill);
-    if (index > -1) {
-      current.splice(index, 1);
-    } else {
-      current.push(skill);
-    }
-    setValue('skills', current, { shouldValidate: true });
+    setSkills(prev => prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]);
   };
 
   const toggleInterest = (id: string) => {
-    const current = [...interests];
-    const index = current.indexOf(id);
-    if (index > -1) {
-      current.splice(index, 1);
-    } else {
-      current.push(id);
-    }
-    setValue('interests', current, { shouldValidate: true });
+    setInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const onFinalSubmit = async (data: OnboardingValues) => {
+  const onFinalSubmit = () => {
     setIsSubmitting(true);
     setTimeout(() => {
-      // Local Database Emulation
-      const existingUsers = JSON.parse(localStorage.getItem('cc_users') || '[]');
-      const userExists = existingUsers.some((u: any) => u.email === data.email);
-      
-      if (userExists) {
-        setIsSubmitting(false);
-        toast({
-          variant: "destructive",
-          title: "Account Error",
-          description: "An account with this email already exists.",
-        });
-        return;
-      }
-
-      const newUser = { ...data, id: Date.now().toString(), points: 100 };
-      existingUsers.push(newUser);
-      localStorage.setItem('cc_users', JSON.stringify(existingUsers));
-      localStorage.setItem('cc_current_user', JSON.stringify(newUser));
-
       setIsSubmitting(false);
       toast({
         title: "Account Created!",
-        description: `Welcome, ${data.fullName}! Your collaborative journey starts now.`,
+        description: `Welcome to CampusConnect! Your collaborative journey starts now.`,
       });
       router.push('/dashboard');
     }, 1500);
@@ -184,7 +86,6 @@ export default function OnboardingFlow() {
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold font-headline">Select Your Domains</h3>
               <p className="text-sm text-muted-foreground">Choose the badges that best represent your core strengths.</p>
-              {errors.skills && <p className="text-xs text-destructive mt-2 font-medium">{errors.skills.message}</p>}
             </div>
             <div className="space-y-4">
               <Label className="text-lg font-bold flex items-center gap-2">
@@ -238,18 +139,11 @@ export default function OnboardingFlow() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label>Full Name</Label>
-                <Input {...register('fullName')} placeholder="John Doe" className={errors.fullName ? "border-destructive" : ""} />
-                {errors.fullName && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.fullName.message}</p>}
+                <Input placeholder="John Doe" defaultValue="John Doe" />
               </div>
               <div className="space-y-2">
                 <Label>College Email</Label>
-                <Input {...register('email')} placeholder="john@university.edu" type="email" className={errors.email ? "border-destructive" : ""} />
-                {errors.email && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.email.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label>Password</Label>
-                <Input {...register('password')} type="password" placeholder="••••••••" className={errors.password ? "border-destructive" : ""} />
-                {errors.password && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.password.message}</p>}
+                <Input placeholder="john@university.edu" type="email" defaultValue="john@university.edu" />
               </div>
             </div>
             <div className="p-5 bg-muted/20 rounded-2xl border space-y-5">
@@ -258,23 +152,15 @@ export default function OnboardingFlow() {
                 <span>Education Background</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Input placeholder="University" {...register('university')} />
-                </div>
-                <div className="space-y-1">
-                  <Input placeholder="Major" {...register('major')} />
-                </div>
-                <div className="space-y-1">
-                  <Input placeholder="Degree" {...register('degree')} />
-                </div>
-                <div className="space-y-1">
-                  <Input placeholder="Graduation Year" {...register('graduationYear')} />
-                </div>
+                <Input placeholder="University" defaultValue="Stanford University" />
+                <Input placeholder="Major" defaultValue="Computer Science" />
+                <Input placeholder="Degree" defaultValue="Bachelor of Science" />
+                <Input placeholder="Graduation Year" defaultValue="2026" />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Bio</Label>
-              <Textarea {...register('bio')} placeholder="What drives you?" className="resize-none h-28" />
+              <Textarea placeholder="What drives you?" className="resize-none h-28" defaultValue="Passionate developer building tools for student collaboration." />
             </div>
           </div>
         );
@@ -344,7 +230,7 @@ export default function OnboardingFlow() {
             {step < 4 ? (
               <Button onClick={handleNext} className="ml-auto">Continue</Button>
             ) : (
-              <Button onClick={handleSubmit(onFinalSubmit)} disabled={isSubmitting} className="ml-auto bg-primary text-white">
+              <Button onClick={onFinalSubmit} disabled={isSubmitting} className="ml-auto bg-primary text-white">
                 {isSubmitting ? 'Finalizing...' : 'Launch Dashboard'}
               </Button>
             )}

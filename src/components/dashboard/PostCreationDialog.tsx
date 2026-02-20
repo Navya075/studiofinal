@@ -1,31 +1,16 @@
+
 "use client";
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, X, ShieldAlert, AlertCircle, Loader2 } from 'lucide-react';
+import { Plus, X, ShieldAlert, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-
-const projectSchema = z.object({
-  title: z.string().min(5, "Title must be at least 5 characters").max(50, "Title too long"),
-  type: z.enum(['Hackathon', 'Research', 'Startup', 'Competition', 'General Collaboration']),
-  summary: z.string().min(10, "Brief pitch must be at least 10 characters").max(100, "Pitch too long"),
-  description: z.string().min(20, "Detailed description must be at least 20 characters"),
-  teamSize: z.number().min(1, "At least 1 member needed").max(10, "Max team size is 10"),
-  duration: z.string().min(1, "Required"),
-  skills: z.array(z.string()).min(1, "Add at least one required skill badge")
-});
-
-type ProjectValues = z.infer<typeof projectSchema>;
 
 interface PostCreationDialogProps {
   onCreate?: (project: any) => void;
@@ -34,29 +19,22 @@ interface PostCreationDialogProps {
 export function PostCreationDialog({ onCreate }: PostCreationDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [skills, setSkills] = useState<string[]>(['React', 'Next.js']);
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    reset,
-    formState: { errors }
-  } = useForm<ProjectValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      type: 'Hackathon',
-      skills: ['React', 'Next.js'],
-      teamSize: 3
-    }
-  });
+  const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      title: formData.get('title') as string,
+      type: formData.get('type') as string,
+      summary: formData.get('summary') as string,
+      description: formData.get('description') as string,
+      teamSize: Number(formData.get('teamSize')),
+      duration: formData.get('duration') as string,
+      skills: skills
+    };
 
-  const skills = watch('skills');
-  const type = watch('type');
-
-  const onFormSubmit = (data: ProjectValues) => {
     setIsSubmitting(true);
-    // Simulation
     setTimeout(() => {
       if (onCreate) {
         onCreate({
@@ -71,7 +49,6 @@ export function PostCreationDialog({ onCreate }: PostCreationDialogProps) {
       toast({ title: "Success", description: "Your project post is now live!" });
       setOpen(false);
       setIsSubmitting(false);
-      reset();
     }, 1000);
   };
 
@@ -89,21 +66,16 @@ export function PostCreationDialog({ onCreate }: PostCreationDialogProps) {
           <DialogDescription>Fill in the details to find your perfect teammates.</DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6 py-4">
+        <form onSubmit={onFormSubmit} className="space-y-6 py-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Project Title</Label>
-              <Input 
-                {...register('title')} 
-                placeholder="e.g. AI Study Assistant" 
-                className={errors.title ? "border-destructive" : ""}
-              />
-              {errors.title && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.title.message}</p>}
+              <Input name="title" placeholder="e.g. AI Study Assistant" required />
             </div>
             <div className="space-y-2">
               <Label>Project Type</Label>
-              <Select value={type} onValueChange={(val: any) => setValue('type', val)}>
-                <SelectTrigger className={errors.type ? "border-destructive" : ""}>
+              <Select name="type" defaultValue="Hackathon">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -120,21 +92,11 @@ export function PostCreationDialog({ onCreate }: PostCreationDialogProps) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Short Summary (Pitch)</Label>
-              <Input 
-                {...register('summary')} 
-                placeholder="A one-sentence pitch..." 
-                className={errors.summary ? "border-destructive" : ""}
-              />
-              {errors.summary && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.summary.message}</p>}
+              <Input name="summary" placeholder="A one-sentence pitch..." required />
             </div>
             <div className="space-y-2">
               <Label>Detailed Description</Label>
-              <Textarea 
-                {...register('description')}
-                placeholder="What are we building? Describe your goals." 
-                className={cn("h-32 resize-none", errors.description ? "border-destructive" : "")} 
-              />
-              {errors.description && <p className="text-[10px] text-destructive font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.description.message}</p>}
+              <Textarea name="description" placeholder="What are we building? Describe your goals." className="h-32 resize-none" required />
             </div>
           </div>
 
@@ -143,46 +105,32 @@ export function PostCreationDialog({ onCreate }: PostCreationDialogProps) {
             <div className="flex flex-wrap gap-2 mb-2">
               {skills.map(skill => (
                 <Badge key={skill} className="bg-tech/10 text-tech border-tech/20 px-3 py-1 gap-1">
-                  {skill} <X className="w-3 h-3 cursor-pointer" onClick={() => setValue('skills', skills.filter(s => s !== skill))} />
+                  {skill} <X className="w-3 h-3 cursor-pointer" onClick={() => setSkills(skills.filter(s => s !== skill))} />
                 </Badge>
               ))}
             </div>
             <Input 
               placeholder="Type a skill and press Enter" 
-              className={errors.skills ? "border-destructive" : ""}
               onKeyDown={e => {
                 if (e.key === 'Enter' && e.currentTarget.value) {
                   e.preventDefault();
                   if (!skills.includes(e.currentTarget.value)) {
-                    setValue('skills', [...skills, e.currentTarget.value]);
+                    setSkills([...skills, e.currentTarget.value]);
                   }
                   e.currentTarget.value = '';
                 }
               }} 
             />
-            {errors.skills && <p className="text-[10px] text-destructive font-medium">{errors.skills.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Team Size Needed</Label>
-              <Input 
-                type="number" 
-                {...register('teamSize', { valueAsNumber: true })}
-                className={errors.teamSize ? "border-destructive" : ""}
-                min={1} 
-                max={10}
-              />
-              {errors.teamSize && <p className="text-[10px] text-destructive font-medium">{errors.teamSize.message}</p>}
+              <Input name="teamSize" type="number" defaultValue={3} min={1} max={10} required />
             </div>
             <div className="space-y-2">
               <Label>Duration / Due Date</Label>
-              <Input 
-                {...register('duration')} 
-                placeholder="e.g. Nov 30" 
-                className={errors.duration ? "border-destructive" : ""}
-              />
-              {errors.duration && <p className="text-[10px] text-destructive font-medium">{errors.duration.message}</p>}
+              <Input name="duration" placeholder="e.g. Nov 30" required />
             </div>
           </div>
 
