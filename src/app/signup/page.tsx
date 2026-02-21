@@ -45,8 +45,6 @@ import { toast } from '@/hooks/use-toast';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 const INTEREST_CATEGORIES = [
   { id: 'hackathons', label: 'Hackathons', icon: <Rocket className="w-5 h-5" />, seed: 'coding' },
@@ -95,19 +93,27 @@ export default function OnboardingFlow() {
   const [university, setUniversity] = useState('Stanford University');
 
   const handleNext = () => {
+    if (step === 1 && skills.length === 0) {
+      toast({ variant: "destructive", title: "Domain Selection", description: "Please select at least one domain badge to proceed." });
+      return;
+    }
     if (step === 2) {
       if (!fullName.trim()) {
         toast({ variant: "destructive", title: "Identity Required", description: "Please enter your full name." });
         return;
       }
       if (!email.trim() || !email.includes('@')) {
-        toast({ variant: "destructive", title: "Email Error", description: "Please enter a valid college email address." });
+        toast({ variant: "destructive", title: "Email Required", description: "Please enter a valid college email address." });
         return;
       }
       if (!password || password.length < 6) {
-        toast({ variant: "destructive", title: "Weak Password", description: "Password must be at least 6 characters long." });
+        toast({ variant: "destructive", title: "Security Required", description: "Password must be at least 6 characters long." });
         return;
       }
+    }
+    if (step === 3 && interests.length === 0) {
+      toast({ variant: "destructive", title: "Vision Board", description: "Please select at least one field of interest." });
+      return;
     }
     setStep(step + 1);
   };
@@ -124,13 +130,23 @@ export default function OnboardingFlow() {
 
   const onFinalSubmit = async () => {
     if (isSubmitting) return;
+
+    // Final Validation
+    if (!fullName.trim() || !email.trim() || !password) {
+      toast({ variant: "destructive", title: "Incomplete Profile", description: "Please go back and ensure your identity details are filled out." });
+      setStep(2);
+      return;
+    }
+
     setIsSubmitting(true);
     const { auth, db } = initializeFirebase();
 
     try {
+      // 1. Create the user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // 2. Prepare the profile data (Ensuring name matches exactly with input)
       const profileData = {
         fullName: fullName.trim(),
         email: email.toLowerCase().trim(),
@@ -145,29 +161,32 @@ export default function OnboardingFlow() {
         graduationYear: "2026"
       };
 
+      // 3. Save to Firestore
       await setDoc(doc(db, 'users', user.uid), profileData);
 
       toast({
-        title: "Profile Created!",
-        description: `Welcome, ${profileData.fullName}! Launching your workspace...`,
+        title: "Workspace Authorized!",
+        description: `Welcome, ${profileData.fullName}! Redirecting to your dashboard...`,
       });
       
+      // 4. Force immediate redirection
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Signup error:", error);
       setIsSubmitting(false);
       
-      let message = "An error occurred during account creation.";
-      let title = "Onboarding Halted";
+      let message = "An error occurred during account creation. Please try again.";
+      let title = "Registration Error";
 
       if (error.code === 'auth/email-already-in-use') {
-        message = "This email is already in use. Please try logging in instead.";
+        title = "Email in Use";
+        message = "This student email is already registered. Please log in instead.";
       } else if (error.code === 'auth/invalid-email') {
-        message = "The email format is invalid. Use your academic email.";
+        message = "The email format is invalid. Please use a valid college email.";
       } else if (error.code === 'auth/weak-password') {
-        message = "The password is too weak. Minimum 6 characters.";
+        message = "The password is too weak. Please use at least 6 characters.";
       } else if (error.code === 'auth/operation-not-allowed') {
-        title = "Auth Protocol Error";
+        title = "System Configuration";
         message = "Email/Password sign-in must be enabled in the Firebase Console.";
       }
 

@@ -22,11 +22,22 @@ export default function LoginPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    
+    // Field Validation Warnings
+    if (!email.trim()) {
       toast({ 
         variant: "destructive", 
-        title: "Credentials Missing", 
-        description: "Please enter both your college email and password to proceed." 
+        title: "Missing Email", 
+        description: "Please enter your college email address to sign in." 
+      });
+      return;
+    }
+
+    if (!password) {
+      toast({ 
+        variant: "destructive", 
+        title: "Missing Password", 
+        description: "Please enter your password." 
       });
       return;
     }
@@ -34,8 +45,8 @@ export default function LoginPage() {
     if (!email.includes('@')) {
       toast({ 
         variant: "destructive", 
-        title: "Email Format Error", 
-        description: "Please enter a valid academic email address." 
+        title: "Invalid Email", 
+        description: "Please enter a valid student email (e.g., name@university.edu)." 
       });
       return;
     }
@@ -46,8 +57,8 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({ 
-        title: "Welcome back!", 
-        description: "Credentials verified. Accessing your collaboration workspace." 
+        title: "Authentication Verified", 
+        description: "Access granted. Launching your workspace..." 
       });
       router.push('/dashboard');
     } catch (error: any) {
