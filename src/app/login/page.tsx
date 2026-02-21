@@ -23,12 +23,20 @@ export default function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast({ variant: "destructive", title: "Credentials Missing", description: "Please enter both your college email and password." });
+      toast({ 
+        variant: "destructive", 
+        title: "Credentials Missing", 
+        description: "Please enter both your college email and password to proceed." 
+      });
       return;
     }
 
     if (!email.includes('@')) {
-      toast({ variant: "destructive", title: "Email Format Error", description: "Please enter a valid academic email." });
+      toast({ 
+        variant: "destructive", 
+        title: "Email Format Error", 
+        description: "Please enter a valid academic email address." 
+      });
       return;
     }
 
@@ -37,25 +45,32 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "Welcome back!", description: "Accessing your collaboration workspace." });
+      toast({ 
+        title: "Welcome back!", 
+        description: "Credentials verified. Accessing your collaboration workspace." 
+      });
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Login error:", error);
       setIsLoading(false);
       
       let message = "Invalid credentials. Please verify your email and password.";
+      let title = "Access Denied";
       
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        message = "Account not found. Please sign up if you haven't already.";
+        message = "No account found with this email. Only registered students can log in. Please sign up first.";
+        title = "Account Not Found";
       } else if (error.code === 'auth/wrong-password') {
-        message = "Incorrect password. Please try again or reset it.";
+        message = "The password entered is incorrect. Please try again or reset it.";
+        title = "Incorrect Password";
       } else if (error.code === 'auth/too-many-requests') {
-        message = "Too many failed attempts. Please try again later.";
+        message = "Too many failed attempts. Access temporarily restricted. Please try again later.";
+        title = "Security Lockout";
       }
 
       toast({
         variant: "destructive",
-        title: "Access Denied",
+        title: title,
         description: message,
       });
     }
