@@ -40,14 +40,13 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Login error:", error);
+      setIsLoading(false);
       let message = "Invalid email or password. Please try again.";
       
-      if (error.code === 'auth/user-not-found') {
-        message = "No account found with this email. Please sign up first.";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        message = "No account found with this email. Only registered students can access the dashboard.";
       } else if (error.code === 'auth/wrong-password') {
         message = "Incorrect password. Please try again.";
-      } else if (error.code === 'auth/invalid-credential') {
-        message = "Incorrect credentials. Only registered students can access the dashboard.";
       }
 
       toast({
@@ -55,7 +54,6 @@ export default function LoginPage() {
         title: "Login Failed",
         description: message,
       });
-      setIsLoading(false);
     }
   };
 

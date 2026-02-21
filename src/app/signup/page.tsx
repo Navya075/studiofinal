@@ -44,6 +44,8 @@ import { toast } from '@/hooks/use-toast';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const INTEREST_CATEGORIES = [
   { id: 'hackathons', label: 'Hackathons', icon: <Rocket className="w-5 h-5" />, seed: 'coding' },
@@ -129,7 +131,7 @@ export default function OnboardingFlow() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Prepare the profile data (Matching exactly with input name)
+      // 2. Prepare the profile data
       const profileData = {
         fullName: fullName.trim(),
         email: email.toLowerCase().trim(),
@@ -144,26 +146,33 @@ export default function OnboardingFlow() {
         graduationYear: "2026"
       };
 
-      // 3. Save to Firestore
-      await setDoc(doc(db, 'users', user.uid), profileData);
+      // 3. Save to Firestore (Initiate, do not block)
+      setDoc(doc(db, 'users', user.uid), profileData)
+        .catch(async (error) => {
+          const permissionError = new FirestorePermissionError({
+            path: `users/${user.uid}`,
+            operation: 'create',
+            requestResourceData: profileData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
 
       toast({
         title: "Genesis Complete!",
         description: `Welcome to CampusConnect, ${profileData.fullName}!`,
       });
       
-      // 4. Redirect to the collaboration home page
+      // 4. Redirect immediately
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Signup error:", error);
+      setIsSubmitting(false);
       let message = error.message || "An error occurred during account creation.";
       
       if (error.code === 'auth/operation-not-allowed') {
-        message = "Email/Password sign-in is not enabled. Please go to the Firebase Console and enable 'Email/Password' under the Authentication > Sign-in method tab.";
+        message = "Email/Password sign-in is not enabled. Please enable it in the Firebase Console.";
       } else if (error.code === 'auth/email-already-in-use') {
-        message = "An account with this email already exists. Try logging in instead.";
-      } else if (error.code === 'auth/weak-password') {
-        message = "The password is too weak. Please choose a stronger one.";
+        message = "An account with this email already exists.";
       }
 
       toast({
@@ -171,7 +180,6 @@ export default function OnboardingFlow() {
         title: "Registration Error",
         description: message,
       });
-      setIsSubmitting(false);
     }
   };
 
