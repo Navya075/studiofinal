@@ -94,7 +94,7 @@ export default function OnboardingFlow() {
 
   const handleNext = () => {
     if (step === 1 && skills.length === 0) {
-      toast({ variant: "destructive", title: "Domain Selection", description: "Please select at least one domain badge to proceed." });
+      toast({ variant: "destructive", title: "Missing Domains", description: "Please select at least one domain badge to proceed." });
       return;
     }
     if (step === 2) {
@@ -103,11 +103,11 @@ export default function OnboardingFlow() {
         return;
       }
       if (!email.trim() || !email.includes('@')) {
-        toast({ variant: "destructive", title: "Email Required", description: "Please enter a valid college email address." });
+        toast({ variant: "destructive", title: "Email Required", description: "Please enter a valid college email address (e.g., student@university.edu)." });
         return;
       }
       if (!password || password.length < 6) {
-        toast({ variant: "destructive", title: "Security Required", description: "Password must be at least 6 characters long." });
+        toast({ variant: "destructive", title: "Security Warning", description: "Password must be at least 6 characters long." });
         return;
       }
     }
@@ -131,9 +131,9 @@ export default function OnboardingFlow() {
   const onFinalSubmit = async () => {
     if (isSubmitting) return;
 
-    // Final Validation
+    // Final Identity Validation
     if (!fullName.trim() || !email.trim() || !password) {
-      toast({ variant: "destructive", title: "Incomplete Profile", description: "Please go back and ensure your identity details are filled out." });
+      toast({ variant: "destructive", title: "Incomplete Profile", description: "Please go back to step 2 and ensure your identity details are filled out." });
       setStep(2);
       return;
     }
@@ -156,7 +156,7 @@ export default function OnboardingFlow() {
         points: 100,
         rating: 5.0,
         isEducator: false,
-        username: email.split('@')[0],
+        username: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '_'),
         bio: `New collaborator joining from ${university}. Ready to build!`,
         graduationYear: "2026"
       };
@@ -166,7 +166,7 @@ export default function OnboardingFlow() {
 
       toast({
         title: "Workspace Authorized!",
-        description: `Welcome, ${profileData.fullName}! Redirecting to your dashboard...`,
+        description: `Welcome, ${profileData.fullName}! Redirection to your dashboard in progress...`,
       });
       
       // 4. Force immediate redirection
@@ -176,17 +176,19 @@ export default function OnboardingFlow() {
       setIsSubmitting(false);
       
       let message = "An error occurred during account creation. Please try again.";
-      let title = "Registration Error";
+      let title = "Registration Alert";
 
       if (error.code === 'auth/email-already-in-use') {
         title = "Email in Use";
-        message = "This student email is already registered. Please log in instead.";
+        message = "This student email is already registered. Please login instead or reset your password.";
       } else if (error.code === 'auth/invalid-email') {
+        title = "Invalid Format";
         message = "The email format is invalid. Please use a valid college email.";
       } else if (error.code === 'auth/weak-password') {
+        title = "Weak Password";
         message = "The password is too weak. Please use at least 6 characters.";
       } else if (error.code === 'auth/operation-not-allowed') {
-        title = "System Configuration";
+        title = "Configuration Error";
         message = "Email/Password sign-in must be enabled in the Firebase Console.";
       }
 
@@ -272,7 +274,7 @@ export default function OnboardingFlow() {
               <div className="space-y-2">
                 <Label className="font-bold">College Email</Label>
                 <Input 
-                  placeholder="john@university.edu" 
+                  placeholder="student@university.edu" 
                   type="email" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)} 
