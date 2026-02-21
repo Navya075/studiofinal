@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -49,8 +48,6 @@ export default function LoginPage() {
         message = "Incorrect password. Please try again.";
       } else if (error.code === 'auth/invalid-credential') {
         message = "Incorrect credentials. Only registered students can access the dashboard.";
-      } else if (error.code === 'auth/operation-not-allowed') {
-        message = "Email/Password login is not enabled. Please contact support.";
       }
 
       toast({

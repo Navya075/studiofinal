@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -10,15 +9,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { 
   Star, 
-  Briefcase, 
   Award, 
   Mail, 
   GraduationCap,
-  ExternalLink,
   MapPin,
   Calendar,
   Trophy,
-  Cpu,
   Copy,
   Check,
   Link as LinkIcon,
@@ -27,9 +23,8 @@ import {
   X,
   MessageSquare,
   Quote,
-  Plus,
-  BookOpen,
-  Verified
+  Verified,
+  BookOpen
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -88,8 +83,9 @@ export default function ProfilePage() {
         const { db } = initializeFirebase();
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) {
-          setUserData(snap.data());
-          setProfileImage(`https://picsum.photos/seed/${snap.data().fullName}/200/200`);
+          const data = snap.data();
+          setUserData(data);
+          setProfileImage(`https://picsum.photos/seed/${data.fullName}/200/200`);
         }
       }
       setIsLoading(false);
@@ -266,7 +262,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2.5">
                 <Calendar className="w-5 h-5 text-primary" />
-                <span>Class of {userData.graduationYear}</span>
+                <span>Class of {userData.graduationYear || '2026'}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-5 h-5 text-primary" />
