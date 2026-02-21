@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -32,7 +33,7 @@
       "type": "object",
       "properties": {
         "title": { "type": "string" },
-        "type": { "enum": ["Hackathon", "Research", "Startup", "Competition", "General Collaboration", "Club Project"] },
+        "type": { "type": "string", "enum": ["Hackathon", "Research", "Startup", "Competition", "General Collaboration", "Club Project"] },
         "summary": { "type": "string" },
         "description": { "type": "string" },
         "isVerified": { "type": "boolean", "description": "Whether the post is from a verified club" },
@@ -86,7 +87,7 @@
       "properties": {
         "title": { "type": "string" },
         "message": { "type": "string" },
-        "type": { "enum": ["info", "success", "alert", "message"] },
+        "type": { "type": "string", "enum": ["info", "success", "alert", "message"] },
         "timestamp": { "type": "string", "format": "date-time" },
         "read": { "type": "boolean" },
         "link": { "type": "string" }
@@ -98,23 +99,23 @@
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": "#/backend/entities/UserProfile",
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
       "description": "Student profiles"
     },
     "/users/{userId}/notifications/{notificationId}": {
-      "schema": "#/backend/entities/Notification",
+      "schema": { "$ref": "#/backend/entities/Notification" },
       "description": "User specific alerts and notifications"
     },
     "/projects/{projectId}": {
-      "schema": "#/backend/entities/Project",
+      "schema": { "$ref": "#/backend/entities/Project" },
       "description": "Project collaboration posts"
     },
     "/projects/{projectId}/reviews": {
-      "schema": "#/backend/entities/PeerReview",
+      "schema": { "$ref": "#/backend/entities/PeerReview" },
       "description": "Post-project teammate reviews"
     },
     "/workshops/{workshopId}": {
-      "schema": "#/backend/entities/Workshop",
+      "schema": { "$ref": "#/backend/entities/Workshop" },
       "description": "Educational workshops and teaching sessions"
     }
   }

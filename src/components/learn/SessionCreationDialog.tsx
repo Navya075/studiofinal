@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -8,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { BookOpen, GraduationCap, Loader2, Sparkles, Clock, Globe, ShieldAlert } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useUser, initializeFirebase } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface SessionCreationDialogProps {
   onCreate?: (session: any) => void;
@@ -17,22 +20,25 @@ export function SessionCreationDialog({ onCreate }: SessionCreationDialogProps) 
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEducator, setIsEducator] = useState(false);
+  const { user } = useUser();
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !user) return;
     
-    const stored = localStorage.getItem('cc_current_user');
-    if (stored && stored !== 'undefined') {
+    const fetchEducatorStatus = async () => {
       try {
-        const parsed = JSON.parse(stored);
-        if (parsed && typeof parsed === 'object') {
-          setIsEducator(parsed.isEducator || false);
+        const { db } = initializeFirebase();
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          setIsEducator(snap.data().isEducator || false);
         }
       } catch (e) {
-        console.warn("Failed to parse local user data:", e);
+        console.warn("Failed to fetch user educator status:", e);
       }
-    }
-  }, [open]);
+    };
+
+    fetchEducatorStatus();
+  }, [open, user]);
 
   const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

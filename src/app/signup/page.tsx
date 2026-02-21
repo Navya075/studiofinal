@@ -128,11 +128,9 @@ export default function OnboardingFlow() {
     const { auth, db } = initializeFirebase();
 
     try {
-      // 1. Create the user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Prepare the profile data (Ensuring name matches exactly from the detail input)
       const profileData = {
         fullName: fullName.trim(),
         email: email.toLowerCase().trim(),
@@ -147,29 +145,21 @@ export default function OnboardingFlow() {
         graduationYear: "2026"
       };
 
-      // 3. Save to Firestore (Non-blocking write)
-      setDoc(doc(db, 'users', user.uid), profileData)
-        .catch(async (error) => {
-          const permissionError = new FirestorePermissionError({
-            path: `users/${user.uid}`,
-            operation: 'create',
-            requestResourceData: profileData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-        });
+      await setDoc(doc(db, 'users', user.uid), profileData);
 
       toast({
         title: "Profile Created!",
-        description: `Welcome, ${profileData.fullName}! Redirecting to dashboard...`,
+        description: `Welcome, ${profileData.fullName}! Launching your workspace...`,
       });
       
-      // 4. Redirect immediately to the dashboard
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Signup error:", error);
       setIsSubmitting(false);
       
       let message = "An error occurred during account creation.";
+      let title = "Onboarding Halted";
+
       if (error.code === 'auth/email-already-in-use') {
         message = "This email is already in use. Please try logging in instead.";
       } else if (error.code === 'auth/invalid-email') {
@@ -177,12 +167,13 @@ export default function OnboardingFlow() {
       } else if (error.code === 'auth/weak-password') {
         message = "The password is too weak. Minimum 6 characters.";
       } else if (error.code === 'auth/operation-not-allowed') {
-        message = "Email/Password sign-in is not enabled. Please enable it in the Firebase Console.";
+        title = "Auth Protocol Error";
+        message = "Email/Password sign-in must be enabled in the Firebase Console.";
       }
 
       toast({
         variant: "destructive",
-        title: "Onboarding Halted",
+        title: title,
         description: message,
       });
     }
