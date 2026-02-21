@@ -153,7 +153,7 @@ export default function OnboardingFlow() {
         description: `Welcome to CampusConnect, ${profileData.fullName}!`,
       });
       
-      // 4. Redirect to the events home page (Dashboard)
+      // 4. Redirect to the collaboration home page
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Signup error:", error);
