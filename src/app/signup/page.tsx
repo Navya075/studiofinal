@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -45,6 +44,8 @@ import { toast } from '@/hooks/use-toast';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const INTEREST_CATEGORIES = [
   { id: 'hackathons', label: 'Hackathons', icon: <Rocket className="w-5 h-5" />, seed: 'coding' },
@@ -96,8 +97,8 @@ export default function OnboardingFlow() {
     if (step === 1 && skills.length === 0) {
       toast({ 
         variant: "destructive", 
-        title: "Missing Domains", 
-        description: "Please select at least one domain badge to represent your skills." 
+        title: "Mission Required", 
+        description: "Please select at least one domain badge to represent your core strengths." 
       });
       return;
     }
@@ -105,7 +106,7 @@ export default function OnboardingFlow() {
       if (!fullName.trim() || fullName.length < 2) {
         toast({ 
           variant: "destructive", 
-          title: "Invalid Name", 
+          title: "Identity Required", 
           description: "Please enter your full name (minimum 2 characters)." 
         });
         return;
@@ -113,7 +114,7 @@ export default function OnboardingFlow() {
       if (!email.trim() || !email.includes('@')) {
         toast({ 
           variant: "destructive", 
-          title: "Invalid Email", 
+          title: "Channel Required", 
           description: "Please enter a valid student email address." 
         });
         return;
@@ -121,8 +122,8 @@ export default function OnboardingFlow() {
       if (!password || password.length < 6) {
         toast({ 
           variant: "destructive", 
-          title: "Weak Password", 
-          description: "Your password must be at least 6 characters long for security." 
+          title: "Security Required", 
+          description: "Your password must be at least 6 characters long." 
         });
         return;
       }
@@ -130,7 +131,7 @@ export default function OnboardingFlow() {
     if (step === 3 && interests.length === 0) {
       toast({ 
         variant: "destructive", 
-        title: "Vision Board", 
+        title: "Vision Required", 
         description: "Select at least one category to customize your collaboration feed." 
       });
       return;
@@ -159,7 +160,7 @@ export default function OnboardingFlow() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Prepare the profile data (Ensuring name matches exactly with input)
+      // 2. Prepare the profile data (Matching exactly with input name)
       const profileData = {
         fullName: fullName.trim(),
         email: email.toLowerCase().trim(),
@@ -174,15 +175,24 @@ export default function OnboardingFlow() {
         graduationYear: "2026"
       };
 
-      // 3. Save to Firestore
-      await setDoc(doc(db, 'users', user.uid), profileData);
+      // 3. Save to Firestore (Non-blocking for faster redirection)
+      const userRef = doc(db, 'users', user.uid);
+      setDoc(userRef, profileData)
+        .catch(async (error) => {
+          const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'create',
+            requestResourceData: profileData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
 
       toast({
         title: "Workspace Authorized!",
-        description: `Welcome to the community, ${profileData.fullName}! Redirection in progress...`,
+        description: `Welcome, ${profileData.fullName}! Launching your dashboard...`,
       });
       
-      // 4. Force immediate redirection
+      // 4. Immediate redirection
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Signup error:", error);
@@ -192,17 +202,14 @@ export default function OnboardingFlow() {
       let title = "Registration Alert";
 
       if (error.code === 'auth/email-already-in-use') {
-        title = "Email in Use";
-        message = "This student email is already registered. Please login instead or reset your password.";
-      } else if (error.code === 'auth/invalid-email') {
-        title = "Invalid Format";
-        message = "The email format is invalid. Please use a valid college email.";
+        title = "Email Registered";
+        message = "This student email is already in the ecosystem. Please login instead.";
+      } else if (error.code === 'auth/operation-not-allowed') {
+        title = "Console Settings Required";
+        message = "Email/Password sign-in must be enabled in the Firebase Console under Authentication > Sign-in method.";
       } else if (error.code === 'auth/weak-password') {
         title = "Weak Password";
         message = "The password is too weak. Please use at least 6 characters.";
-      } else if (error.code === 'auth/operation-not-allowed') {
-        title = "Configuration Error";
-        message = "Email/Password sign-in must be enabled in the Firebase Console under Authentication > Sign-in method.";
       }
 
       toast({
