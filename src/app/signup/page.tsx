@@ -120,6 +120,7 @@ export default function OnboardingFlow() {
   };
 
   const onFinalSubmit = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     const { auth, db } = initializeFirebase();
 
@@ -127,7 +128,7 @@ export default function OnboardingFlow() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      await setDoc(doc(db, 'users', user.uid), {
+      const profileData = {
         fullName,
         email,
         university,
@@ -139,14 +140,22 @@ export default function OnboardingFlow() {
         username: email.split('@')[0],
         bio: `New explorer joining from ${university}. Ready to disrupt!`,
         graduationYear: "2026"
-      });
+      };
+
+      await setDoc(doc(db, 'users', user.uid), profileData);
+
+      // Save a local copy for components that might need immediate access
+      localStorage.setItem('cc_current_user', JSON.stringify(profileData));
 
       toast({
         title: "Genesis Complete!",
         description: `Welcome to CampusConnect, ${fullName}!`,
       });
       
-      router.push('/dashboard');
+      // Delay slightly to ensure Firebase session is recognized
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 500);
     } catch (error: any) {
       toast({
         variant: "destructive",

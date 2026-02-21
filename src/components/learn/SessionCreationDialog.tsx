@@ -19,12 +19,18 @@ export function SessionCreationDialog({ onCreate }: SessionCreationDialogProps) 
   const [isEducator, setIsEducator] = useState(false);
 
   useEffect(() => {
+    if (!open) return;
+    
     const stored = localStorage.getItem('cc_current_user');
-    if (stored) {
+    if (stored && stored !== 'undefined') {
       try {
         const parsed = JSON.parse(stored);
-        setIsEducator(parsed.isEducator || false);
-      } catch (e) {}
+        if (parsed && typeof parsed === 'object') {
+          setIsEducator(parsed.isEducator || false);
+        }
+      } catch (e) {
+        console.warn("Failed to parse local user data:", e);
+      }
     }
   }, [open]);
 

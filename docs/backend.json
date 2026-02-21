@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -36,7 +35,7 @@
         "type": { "enum": ["Hackathon", "Research", "Startup", "Competition", "General Collaboration", "Club Project"] },
         "summary": { "type": "string" },
         "description": { "type": "string" },
-        "isVerified": { "boolean": "boolean", "description": "Whether the post is from a verified club" },
+        "isVerified": { "type": "boolean", "description": "Whether the post is from a verified club" },
         "status": { "type": "string", "enum": ["Active", "Completed"] },
         "requiredSkills": {
           "type": "array",
@@ -75,7 +74,7 @@
         "reviewerId": { "type": "string" },
         "revieweeId": { "type": "string" },
         "projectId": { "type": "string" },
-        "rating": { "number": "number" },
+        "rating": { "type": "number" },
         "comment": { "type": "string" },
         "pointsAwarded": { "type": "number" }
       }
