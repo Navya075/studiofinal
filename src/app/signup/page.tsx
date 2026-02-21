@@ -38,10 +38,14 @@ import {
   Scale,
   Check,
   Star,
-  Chrome
+  Chrome,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 
 const INTEREST_CATEGORIES = [
   { id: 'hackathons', label: 'Hackathons', icon: <Rocket className="w-5 h-5" />, seed: 'coding' },
@@ -83,8 +87,31 @@ export default function OnboardingFlow() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [skills, setSkills] = useState<string[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
+  
+  // Step 2 Form Data
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [university, setUniversity] = useState('Stanford University');
 
-  const handleNext = () => setStep(step + 1);
+  const handleNext = () => {
+    if (step === 2) {
+      if (!fullName || !email || !password) {
+        toast({ variant: "destructive", title: "Missing Information", description: "Please fill out all identity fields." });
+        return;
+      }
+      if (!email.includes('@')) {
+        toast({ variant: "destructive", title: "Invalid Email", description: "Please enter a valid college email." });
+        return;
+      }
+      if (password.length < 6) {
+        toast({ variant: "destructive", title: "Weak Password", description: "Password must be at least 6 characters." });
+        return;
+      }
+    }
+    setStep(step + 1);
+  };
+  
   const handleBack = () => setStep(step - 1);
 
   const toggleSkill = (skill: string) => {
@@ -95,26 +122,42 @@ export default function OnboardingFlow() {
     setInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const onFinalSubmit = () => {
+  const onFinalSubmit = async () => {
     setIsSubmitting(true);
-    const userData = {
-      fullName: 'John Doe',
-      email: 'john@university.edu',
-      university: 'Stanford University',
-      skills,
-      interests,
-      points: 100,
-      rating: 4.5
-    };
-    localStorage.setItem('cc_current_user', JSON.stringify(userData));
-    setTimeout(() => {
-      setIsSubmitting(false);
+    const { auth, db } = initializeFirebase();
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, 'users', user.uid), {
+        fullName,
+        email,
+        university,
+        skills,
+        interests,
+        points: 100,
+        rating: 4.5,
+        isEducator: false,
+        username: email.split('@')[0],
+        bio: `New explorer joining from ${university}. Ready to disrupt!`,
+        graduationYear: "2026"
+      });
+
       toast({
-        title: "Account Created!",
-        description: `Welcome to CampusConnect! Your collaborative journey starts now.`,
+        title: "Genesis Complete!",
+        description: `Welcome to CampusConnect, ${fullName}!`,
       });
       router.push('/dashboard');
-    }, 1500);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "An error occurred during account creation.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
@@ -178,24 +221,35 @@ export default function OnboardingFlow() {
               <p className="text-sm text-muted-foreground">How should the community address you?</p>
             </div>
             
-            <div className="flex flex-col gap-4">
-              <Button variant="outline" className="h-14 rounded-2xl gap-3 font-bold border-muted/30 hover:bg-muted/10 transition-all">
-                <Chrome className="w-5 h-5 text-primary" /> Join with Google
-              </Button>
-              <div className="relative py-4">
-                <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-muted-foreground font-bold tracking-widest">Or Continue With</span></div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
                 <Label className="font-bold">Full Name</Label>
-                <Input placeholder="John Doe" defaultValue="John Doe" className="h-12 rounded-2xl" />
+                <Input 
+                  placeholder="John Doe" 
+                  value={fullName} 
+                  onChange={(e) => setFullName(e.target.value)} 
+                  className="h-12 rounded-2xl" 
+                />
               </div>
               <div className="space-y-2">
                 <Label className="font-bold">College Email</Label>
-                <Input placeholder="john@university.edu" type="email" defaultValue="john@university.edu" className="h-12 rounded-2xl" />
+                <Input 
+                  placeholder="john@university.edu" 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  className="h-12 rounded-2xl" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-bold">Create Password</Label>
+                <Input 
+                  placeholder="Min 6 characters" 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  className="h-12 rounded-2xl" 
+                />
               </div>
             </div>
             <div className="p-8 bg-muted/20 rounded-[2rem] border-2 border-primary/5 space-y-6">
@@ -203,11 +257,14 @@ export default function OnboardingFlow() {
                 <GraduationCap className="w-5 h-5" />
                 <span>Academic Verification</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-widest text-muted-foreground">University</Label>
-                  <Input placeholder="University Name" defaultValue="Stanford University" className="h-11 rounded-xl" />
-                </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">University</Label>
+                <Input 
+                  placeholder="University Name" 
+                  value={university} 
+                  onChange={(e) => setUniversity(e.target.value)} 
+                  className="h-11 rounded-xl" 
+                />
               </div>
             </div>
           </div>
@@ -276,7 +333,6 @@ export default function OnboardingFlow() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 py-12 relative overflow-hidden">
-      {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <Star className="absolute top-[10%] left-[5%] w-12 h-12 text-primary/5 rotate-12" />
         <Star className="absolute top-[80%] right-[10%] w-20 h-20 text-primary/5 -rotate-12" />
@@ -317,7 +373,7 @@ export default function OnboardingFlow() {
               <Button onClick={handleNext} className="ml-auto h-12 px-10 rounded-2xl font-bold bg-primary text-white shadow-lg shadow-primary/20">Continue</Button>
             ) : (
               <Button onClick={onFinalSubmit} disabled={isSubmitting} className="ml-auto h-14 px-12 rounded-2xl font-bold bg-primary text-white shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all">
-                {isSubmitting ? 'Finalizing Genesis...' : 'Launch Dashboard'}
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Launch Dashboard'}
               </Button>
             )}
           </CardFooter>

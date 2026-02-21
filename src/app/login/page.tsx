@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -10,24 +11,44 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { Logo } from '@/components/Logo';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { initializeFirebase } from '@/firebase';
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast({ variant: "destructive", title: "Missing Credentials", description: "Please enter both email and password." });
+      return;
+    }
+
     setIsLoading(true);
-    
-    setTimeout(() => {
-      toast({ title: "Welcome back!", description: "Successfully logged in as John Doe." });
+    const { auth } = initializeFirebase();
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({ title: "Welcome back!", description: "Successfully logged in." });
       router.push('/dashboard');
-    }, 1200);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.code === 'auth/user-not-found' 
+          ? "No account found with this email. Please sign up first." 
+          : "Invalid email or password. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Decorative Elements */}
       <Star className="absolute top-[10%] left-[10%] w-8 h-8 text-primary/10 animate-pulse" />
       <Star className="absolute bottom-[10%] right-[10%] w-12 h-12 text-primary/10" />
 
@@ -49,27 +70,30 @@ export default function LoginPage() {
             <CardDescription>Enter your college email and password</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex flex-col gap-3">
-              <Button variant="outline" className="h-12 rounded-2xl gap-3 font-bold border-muted/30 hover:bg-muted/10 transition-all">
-                <Chrome className="w-5 h-5 text-primary" /> Sign in with Google
-              </Button>
-              <div className="relative py-2">
-                <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-                <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-white px-4 text-muted-foreground font-black tracking-widest">Or login with</span></div>
-              </div>
-            </div>
-
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">College Email</Label>
-                <Input id="email" type="email" placeholder="student@university.edu" defaultValue="student@university.edu" className="h-12 rounded-2xl" />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="student@university.edu" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-12 rounded-2xl" 
+                />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Password</Label>
                   <Link href="#" className="text-xs text-primary hover:underline font-bold">Forgot password?</Link>
                 </div>
-                <Input id="password" type="password" defaultValue="password123" className="h-12 rounded-2xl" />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-12 rounded-2xl" 
+                />
               </div>
               <Button 
                 type="submit" 

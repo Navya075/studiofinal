@@ -16,6 +16,8 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser, initializeFirebase } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface NavbarProps {
   isDashboard?: boolean;
@@ -23,13 +25,27 @@ interface NavbarProps {
 
 export function Navbar({ isDashboard = false }: NavbarProps) {
   const router = useRouter();
-  const [userData] = useState({ fullName: "John Doe", points: 240 });
+  const { user, loading: userLoading } = useUser();
+  const [profileData, setProfileData] = useState<any>(null);
 
-  const handleLogout = () => {
+  useEffect(() => {
+    if (user) {
+      const { db } = initializeFirebase();
+      getDoc(doc(db, 'users', user.uid)).then((snap) => {
+        if (snap.exists()) {
+          setProfileData(snap.data());
+        }
+      });
+    }
+  }, [user]);
+
+  const handleLogout = async () => {
+    const { auth } = initializeFirebase();
+    await auth.signOut();
     router.push('/');
   };
 
-  if (!isDashboard) {
+  if (!isDashboard || !user) {
     return (
       <nav className="fixed top-0 w-full z-50 glass border-b border-primary/20 h-16 flex items-center px-6 md:px-12 justify-between">
         <Link href="/" className="flex items-center gap-2">
@@ -62,16 +78,18 @@ export function Navbar({ isDashboard = false }: NavbarProps) {
       <div className="flex items-center gap-3">
         <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
           <Trophy className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold text-primary uppercase">{userData.points} PTS</span>
+          <span className="text-xs font-bold text-primary uppercase">{profileData?.points || 0} PTS</span>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="p-1 rounded-full flex items-center gap-2 hover:bg-muted">
               <Avatar className="w-8 h-8 border shadow-sm">
-                <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">JD</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                  {profileData?.fullName?.[0] || 'U'}
+                </AvatarFallback>
               </Avatar>
-              <span className="hidden md:block text-sm font-bold text-foreground pr-2">{userData.fullName}</span>
+              <span className="hidden md:block text-sm font-bold text-foreground pr-2">{profileData?.fullName || 'User'}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 mt-1 shadow-xl border-muted/20">

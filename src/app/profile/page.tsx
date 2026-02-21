@@ -33,20 +33,8 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-
-const MOCK_USER = {
-  fullName: "John Doe",
-  email: "john.doe@university.edu",
-  university: "Stanford University",
-  graduationYear: "2026",
-  bio: "Passionate about building scalable web applications and exploring the future of blockchain and AI. Always looking for innovative hackathon teams.",
-  points: 2450,
-  rating: 4.8,
-  isEducator: true,
-  skills: ["React", "Next.js", "TypeScript", "Python", "Tailwind CSS", "Node.js", "Firebase", "Solidity"],
-  interests: ["Hackathons", "AI/ML", "Open Source", "Startups", "FinTech", "Cybersecurity"],
-  username: "johndoe_dev"
-};
+import { useUser, initializeFirebase } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const MOCK_FEEDBACK = [
   {
@@ -79,6 +67,7 @@ const MOCK_FEEDBACK = [
 ];
 
 export default function ProfilePage() {
+  const { user, loading: authLoading } = useUser();
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -92,22 +81,22 @@ export default function ProfilePage() {
   const defaultBanner = PlaceHolderImages.find(img => img.id === 'default-banner')?.imageUrl;
 
   useEffect(() => {
-    const stored = localStorage.getItem('cc_current_user');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setUserData({ ...MOCK_USER, ...parsed });
-        setProfileImage(`https://picsum.photos/seed/${parsed.fullName}/200/200`);
-      } catch (e) {
-        setUserData(MOCK_USER);
-        setProfileImage(`https://picsum.photos/seed/johndoe/200/200`);
+    if (authLoading) return;
+
+    const fetchProfile = async () => {
+      if (user) {
+        const { db } = initializeFirebase();
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          setUserData(snap.data());
+          setProfileImage(`https://picsum.photos/seed/${snap.data().fullName}/200/200`);
+        }
       }
-    } else {
-      setUserData(MOCK_USER);
-      setProfileImage(`https://picsum.photos/seed/johndoe/200/200`);
-    }
-    setIsLoading(false);
-  }, []);
+      setIsLoading(false);
+    };
+
+    fetchProfile();
+  }, [user, authLoading]);
 
   const handleCopyLink = () => {
     const profileUrl = `campusconnect.app/u/${userData?.username || 'user'}`;
@@ -156,7 +145,6 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background pt-16">
       <Navbar isDashboard />
       
-      {/* Profile Header / Banner */}
       <div 
         className="relative h-48 md:h-80 bg-muted group transition-all"
         style={{ backgroundImage: `url(${activeBanner})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
@@ -238,7 +226,6 @@ export default function ProfilePage() {
       <main className="max-w-6xl mx-auto px-4 pt-36 pb-12">
         <div className="flex flex-col items-center space-y-16">
           
-          {/* Centered Identity Section */}
           <div className="flex flex-col items-center text-center space-y-6 max-w-3xl w-full">
             <div className="space-y-4">
               <div className="flex items-center justify-center gap-2">
@@ -298,18 +285,6 @@ export default function ProfilePage() {
               <Button className="rounded-[2rem] h-16 px-16 text-xl font-black bg-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1.5 transition-all" asChild>
                 <Link href="/settings">Update Profile Details</Link>
               </Button>
-              <div className="flex items-center gap-14">
-                <Button variant="link" className="text-muted-foreground hover:text-primary font-black text-lg gap-2.5 p-0 h-auto uppercase tracking-[0.2em] decoration-4" asChild>
-                  <Link href="https://github.com" target="_blank">
-                    GitHub <ExternalLink className="w-5 h-5" />
-                  </Link>
-                </Button>
-                <Button variant="link" className="text-muted-foreground hover:text-primary font-black text-lg gap-2.5 p-0 h-auto uppercase tracking-[0.2em] decoration-4" asChild>
-                  <Link href="https://linkedin.com" target="_blank">
-                    LinkedIn <ExternalLink className="w-5 h-5" />
-                  </Link>
-                </Button>
-              </div>
             </div>
           </div>
 
@@ -329,13 +304,6 @@ export default function ProfilePage() {
                         <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Collab Points</div>
                       </div>
                       <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-2 font-black rounded-2xl text-[10px] uppercase">TOP 5%</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-8 bg-white rounded-[2.5rem] border border-primary/5 shadow-sm hover:border-primary/40 hover:-translate-y-1 transition-all group">
-                      <div className="space-y-2">
-                        <div className="text-4xl font-black text-primary group-hover:scale-110 transition-transform origin-left">3</div>
-                        <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Live Projects</div>
-                      </div>
-                      <Badge className="bg-green-500/10 text-green-600 border-green-500/20 px-4 py-2 font-black rounded-2xl text-[10px] uppercase">ACTIVE</Badge>
                     </div>
                   </CardContent>
                 </div>
@@ -422,68 +390,6 @@ export default function ProfilePage() {
                       </CardContent>
                     </Card>
                   ))}
-                </div>
-              </section>
-
-              <section className="space-y-10">
-                <div className="flex items-center justify-between border-b-4 border-primary/5 pb-8">
-                  <h2 className="text-4xl font-black font-headline flex items-center gap-6">
-                    <Briefcase className="w-10 h-10 text-primary" /> Active Roadmap
-                  </h2>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                  {[
-                    { title: "AI Study Companion", role: "Lead Architect", status: "80% Complete", color: "bg-primary", members: 3 },
-                    { title: "Campus Vote Protocol", role: "Smart Contract dev", status: "Active", color: "bg-primary/60", members: 2 }
-                  ].map((project, idx) => (
-                    <Card key={idx} className="border-none shadow-soft group hover:shadow-2xl transition-all bg-white overflow-hidden rounded-[3.5rem] border border-transparent hover:border-primary/10" asChild>
-                      <div>
-                        <div className={`h-4 w-full ${project.color}`} />
-                        <CardContent className="p-10">
-                          <div className="flex justify-between items-start mb-8">
-                            <div className="space-y-2">
-                              <h4 className="font-black text-3xl group-hover:text-primary transition-colors">{project.title}</h4>
-                              <p className="text-[11px] text-muted-foreground font-black uppercase tracking-[0.3em]">{project.role}</p>
-                            </div>
-                            <Badge className="bg-primary/10 text-primary border-primary/20 rounded-2xl text-[10px] font-black px-4 py-2 uppercase tracking-widest shadow-sm">
-                              {project.status}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-5 mb-10">
-                            <div className="flex -space-x-4">
-                              {[1, 2, 3].map(i => (
-                                <Avatar key={i} className="w-12 h-12 border-4 border-white shadow-md">
-                                  <AvatarImage src={`https://picsum.photos/seed/team${i}${idx}/50/50`} />
-                                  <AvatarFallback>U</AvatarFallback>
-                                </Avatar>
-                              ))}
-                            </div>
-                            <span className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em]">{project.members} Team Members</span>
-                          </div>
-                          <Button variant="secondary" className="w-full justify-between text-[11px] font-black uppercase tracking-widest rounded-2xl h-16 border-4 border-transparent hover:border-primary/20 bg-muted/30 group/btn transition-all shadow-sm" asChild>
-                            <Link href="/dashboard">
-                              Enter Project Room <ExternalLink className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                            </Link>
-                          </Button>
-                        </CardContent>
-                      </div>
-                    </Card>
-                  ))}
-                  
-                  <Card className="border-[6px] border-dashed border-primary/5 bg-transparent shadow-none flex flex-col items-center justify-center p-12 text-center space-y-8 hover:border-primary/30 hover:bg-primary/[0.03] transition-all cursor-pointer rounded-[4rem] group min-h-[400px]" asChild>
-                    <Link href="/dashboard">
-                      <div className="w-24 h-24 rounded-[2.5rem] bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-700 shadow-inner">
-                        <Cpu className="w-12 h-12 text-primary/30 group-hover:text-primary transition-colors" />
-                      </div>
-                      <div className="space-y-3">
-                        <h4 className="text-3xl font-black text-foreground">Initiate Project</h4>
-                        <p className="text-base text-muted-foreground font-bold tracking-tight">Ready to lead your next disruptive idea?</p>
-                      </div>
-                      <div className="p-4 bg-primary text-white rounded-full opacity-0 group-hover:opacity-100 -translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-xl shadow-primary/30">
-                        <Plus className="w-6 h-6" />
-                      </div>
-                    </Link>
-                  </Card>
                 </div>
               </section>
             </div>
