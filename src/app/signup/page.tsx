@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -38,7 +37,6 @@ import {
   Scale,
   Check,
   Star,
-  Chrome,
   Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -88,7 +86,6 @@ export default function OnboardingFlow() {
   const [skills, setSkills] = useState<string[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
   
-  // Step 2 Form Data
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -148,6 +145,7 @@ export default function OnboardingFlow() {
         title: "Genesis Complete!",
         description: `Welcome to CampusConnect, ${fullName}!`,
       });
+      
       router.push('/dashboard');
     } catch (error: any) {
       toast({
@@ -155,7 +153,6 @@ export default function OnboardingFlow() {
         title: "Registration Failed",
         description: error.message || "An error occurred during account creation.",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };

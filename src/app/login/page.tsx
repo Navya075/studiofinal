@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -42,7 +41,6 @@ export default function LoginPage() {
           ? "No account found with this email. Please sign up first." 
           : "Invalid email or password. Please try again.",
       });
-    } finally {
       setIsLoading(false);
     }
   };
