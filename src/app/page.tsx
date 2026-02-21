@@ -1,3 +1,4 @@
+
 import { Navbar } from '@/components/layout/Navbar';
 import { Badge } from '@/components/ui/badge';
 import { Rocket, Users, Code, Globe, Sparkles, CheckCircle2 } from 'lucide-react';

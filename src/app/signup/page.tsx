@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -95,16 +96,16 @@ export default function OnboardingFlow() {
 
   const handleNext = () => {
     if (step === 2) {
-      if (!fullName || fullName.trim().length < 2) {
-        toast({ variant: "destructive", title: "Invalid Name", description: "Please enter your full name (min 2 characters)." });
+      if (!fullName.trim()) {
+        toast({ variant: "destructive", title: "Identity Required", description: "Please enter your full name." });
         return;
       }
-      if (!email || !email.includes('@')) {
-        toast({ variant: "destructive", title: "Invalid Email", description: "Please enter a valid college email address." });
+      if (!email.trim() || !email.includes('@')) {
+        toast({ variant: "destructive", title: "Email Error", description: "Please enter a valid college email address." });
         return;
       }
       if (!password || password.length < 6) {
-        toast({ variant: "destructive", title: "Weak Password", description: "Password must be at least 6 characters." });
+        toast({ variant: "destructive", title: "Weak Password", description: "Password must be at least 6 characters long." });
         return;
       }
     }
@@ -131,7 +132,7 @@ export default function OnboardingFlow() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Prepare the profile data
+      // 2. Prepare the profile data (Ensuring name matches exactly)
       const profileData = {
         fullName: fullName.trim(),
         email: email.toLowerCase().trim(),
@@ -146,7 +147,7 @@ export default function OnboardingFlow() {
         graduationYear: "2026"
       };
 
-      // 3. Save to Firestore (Initiate, do not block)
+      // 3. Save to Firestore (Non-blocking write)
       setDoc(doc(db, 'users', user.uid), profileData)
         .catch(async (error) => {
           const permissionError = new FirestorePermissionError({
@@ -158,8 +159,8 @@ export default function OnboardingFlow() {
         });
 
       toast({
-        title: "Genesis Complete!",
-        description: `Welcome to CampusConnect, ${profileData.fullName}!`,
+        title: "Profile Created!",
+        description: `Welcome, ${profileData.fullName}! Redirecting to dashboard...`,
       });
       
       // 4. Redirect immediately
@@ -167,17 +168,21 @@ export default function OnboardingFlow() {
     } catch (error: any) {
       console.error("Signup error:", error);
       setIsSubmitting(false);
-      let message = error.message || "An error occurred during account creation.";
       
-      if (error.code === 'auth/operation-not-allowed') {
+      let message = "An error occurred during account creation.";
+      if (error.code === 'auth/email-already-in-use') {
+        message = "This email is already in use. Please try logging in.";
+      } else if (error.code === 'auth/invalid-email') {
+        message = "The email address is invalid.";
+      } else if (error.code === 'auth/weak-password') {
+        message = "The password is too weak.";
+      } else if (error.code === 'auth/operation-not-allowed') {
         message = "Email/Password sign-in is not enabled. Please enable it in the Firebase Console.";
-      } else if (error.code === 'auth/email-already-in-use') {
-        message = "An account with this email already exists.";
       }
 
       toast({
         variant: "destructive",
-        title: "Registration Error",
+        title: "Launch Failed",
         description: message,
       });
     }

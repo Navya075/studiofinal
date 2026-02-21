@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -22,12 +23,12 @@ export default function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast({ variant: "destructive", title: "Missing Credentials", description: "Please enter both email and password." });
+      toast({ variant: "destructive", title: "Credentials Missing", description: "Please enter both your college email and password." });
       return;
     }
 
     if (!email.includes('@')) {
-      toast({ variant: "destructive", title: "Invalid Format", description: "Please enter a valid college email." });
+      toast({ variant: "destructive", title: "Email Format Error", description: "Please enter a valid academic email." });
       return;
     }
 
@@ -36,22 +37,25 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "Welcome back!", description: "Successfully logged in to your collaboration hub." });
+      toast({ title: "Welcome back!", description: "Accessing your collaboration workspace." });
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Login error:", error);
       setIsLoading(false);
-      let message = "Invalid email or password. Please try again.";
+      
+      let message = "Invalid credentials. Please verify your email and password.";
       
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        message = "No account found with this email. Only registered students can access the dashboard.";
+        message = "Account not found. Please sign up if you haven't already.";
       } else if (error.code === 'auth/wrong-password') {
-        message = "Incorrect password. Please try again.";
+        message = "Incorrect password. Please try again or reset it.";
+      } else if (error.code === 'auth/too-many-requests') {
+        message = "Too many failed attempts. Please try again later.";
       }
 
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Access Denied",
         description: message,
       });
     }
