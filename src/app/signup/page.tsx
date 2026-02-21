@@ -94,25 +94,45 @@ export default function OnboardingFlow() {
 
   const handleNext = () => {
     if (step === 1 && skills.length === 0) {
-      toast({ variant: "destructive", title: "Missing Domains", description: "Please select at least one domain badge to proceed." });
+      toast({ 
+        variant: "destructive", 
+        title: "Missing Domains", 
+        description: "Please select at least one domain badge to represent your skills." 
+      });
       return;
     }
     if (step === 2) {
-      if (!fullName.trim()) {
-        toast({ variant: "destructive", title: "Identity Required", description: "Please enter your full name." });
+      if (!fullName.trim() || fullName.length < 2) {
+        toast({ 
+          variant: "destructive", 
+          title: "Invalid Name", 
+          description: "Please enter your full name (minimum 2 characters)." 
+        });
         return;
       }
       if (!email.trim() || !email.includes('@')) {
-        toast({ variant: "destructive", title: "Email Required", description: "Please enter a valid college email address (e.g., student@university.edu)." });
+        toast({ 
+          variant: "destructive", 
+          title: "Invalid Email", 
+          description: "Please enter a valid student email address." 
+        });
         return;
       }
       if (!password || password.length < 6) {
-        toast({ variant: "destructive", title: "Security Warning", description: "Password must be at least 6 characters long." });
+        toast({ 
+          variant: "destructive", 
+          title: "Weak Password", 
+          description: "Your password must be at least 6 characters long for security." 
+        });
         return;
       }
     }
     if (step === 3 && interests.length === 0) {
-      toast({ variant: "destructive", title: "Vision Board", description: "Please select at least one field of interest." });
+      toast({ 
+        variant: "destructive", 
+        title: "Vision Board", 
+        description: "Select at least one category to customize your collaboration feed." 
+      });
       return;
     }
     setStep(step + 1);
@@ -130,13 +150,6 @@ export default function OnboardingFlow() {
 
   const onFinalSubmit = async () => {
     if (isSubmitting) return;
-
-    // Final Identity Validation
-    if (!fullName.trim() || !email.trim() || !password) {
-      toast({ variant: "destructive", title: "Incomplete Profile", description: "Please go back to step 2 and ensure your identity details are filled out." });
-      setStep(2);
-      return;
-    }
 
     setIsSubmitting(true);
     const { auth, db } = initializeFirebase();
@@ -166,7 +179,7 @@ export default function OnboardingFlow() {
 
       toast({
         title: "Workspace Authorized!",
-        description: `Welcome, ${profileData.fullName}! Redirection to your dashboard in progress...`,
+        description: `Welcome to the community, ${profileData.fullName}! Redirection in progress...`,
       });
       
       // 4. Force immediate redirection
@@ -189,7 +202,7 @@ export default function OnboardingFlow() {
         message = "The password is too weak. Please use at least 6 characters.";
       } else if (error.code === 'auth/operation-not-allowed') {
         title = "Configuration Error";
-        message = "Email/Password sign-in must be enabled in the Firebase Console.";
+        message = "Email/Password sign-in must be enabled in the Firebase Console under Authentication > Sign-in method.";
       }
 
       toast({
