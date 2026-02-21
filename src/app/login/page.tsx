@@ -48,7 +48,9 @@ export default function LoginPage() {
       } else if (error.code === 'auth/wrong-password') {
         message = "Incorrect password. Please try again.";
       } else if (error.code === 'auth/invalid-credential') {
-        message = "Incorrect credentials. Please check your email and password.";
+        message = "Incorrect credentials. Only registered students can access the dashboard.";
+      } else if (error.code === 'auth/operation-not-allowed') {
+        message = "Email/Password login is not enabled. Please contact support.";
       }
 
       toast({

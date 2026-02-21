@@ -130,7 +130,7 @@ export default function OnboardingFlow() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Prepare the profile data
+      // 2. Prepare the profile data (Matching exactly with input name)
       const profileData = {
         fullName: fullName.trim(),
         email: email.toLowerCase().trim(),
@@ -148,24 +148,29 @@ export default function OnboardingFlow() {
       // 3. Save to Firestore
       await setDoc(doc(db, 'users', user.uid), profileData);
 
-      // 4. Update local cache for immediate UI responsiveness
-      localStorage.setItem('cc_current_user', JSON.stringify(profileData));
-
       toast({
         title: "Genesis Complete!",
         description: `Welcome to CampusConnect, ${profileData.fullName}!`,
       });
       
-      // 5. Direct navigation to the dashboard
+      // 4. Redirect to the events home page (Dashboard)
       router.push('/dashboard');
     } catch (error: any) {
       console.error("Signup error:", error);
+      let message = error.message || "An error occurred during account creation.";
+      
+      if (error.code === 'auth/operation-not-allowed') {
+        message = "Email/Password sign-in is not enabled. Please go to the Firebase Console and enable 'Email/Password' under the Authentication > Sign-in method tab.";
+      } else if (error.code === 'auth/email-already-in-use') {
+        message = "An account with this email already exists. Try logging in instead.";
+      } else if (error.code === 'auth/weak-password') {
+        message = "The password is too weak. Please choose a stronger one.";
+      }
+
       toast({
         variant: "destructive",
-        title: "Registration Failed",
-        description: error.code === 'auth/email-already-in-use' 
-          ? "An account with this email already exists." 
-          : (error.message || "An error occurred during account creation."),
+        title: "Registration Error",
+        description: message,
       });
       setIsSubmitting(false);
     }
