@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -26,20 +27,34 @@ export default function LoginPage() {
       return;
     }
 
+    if (!email.includes('@')) {
+      toast({ variant: "destructive", title: "Invalid Format", description: "Please enter a valid college email." });
+      return;
+    }
+
     setIsLoading(true);
     const { auth } = initializeFirebase();
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({ title: "Welcome back!", description: "Successfully logged in." });
+      toast({ title: "Welcome back!", description: "Successfully logged in to your collaboration hub." });
       router.push('/dashboard');
     } catch (error: any) {
+      console.error("Login error:", error);
+      let message = "Invalid email or password. Please try again.";
+      
+      if (error.code === 'auth/user-not-found') {
+        message = "No account found with this email. Please sign up first.";
+      } else if (error.code === 'auth/wrong-password') {
+        message = "Incorrect password. Please try again.";
+      } else if (error.code === 'auth/invalid-credential') {
+        message = "Incorrect credentials. Please check your email and password.";
+      }
+
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.code === 'auth/user-not-found' 
-          ? "No account found with this email. Please sign up first." 
-          : "Invalid email or password. Please try again.",
+        description: message,
       });
       setIsLoading(false);
     }

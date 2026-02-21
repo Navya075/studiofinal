@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -93,15 +94,15 @@ export default function OnboardingFlow() {
 
   const handleNext = () => {
     if (step === 2) {
-      if (!fullName || !email || !password) {
-        toast({ variant: "destructive", title: "Missing Information", description: "Please fill out all identity fields." });
+      if (!fullName || fullName.trim().length < 2) {
+        toast({ variant: "destructive", title: "Invalid Name", description: "Please enter your full name (min 2 characters)." });
         return;
       }
-      if (!email.includes('@')) {
-        toast({ variant: "destructive", title: "Invalid Email", description: "Please enter a valid college email." });
+      if (!email || !email.includes('@')) {
+        toast({ variant: "destructive", title: "Invalid Email", description: "Please enter a valid college email address." });
         return;
       }
-      if (password.length < 6) {
+      if (!password || password.length < 6) {
         toast({ variant: "destructive", title: "Weak Password", description: "Password must be at least 6 characters." });
         return;
       }
@@ -125,42 +126,46 @@ export default function OnboardingFlow() {
     const { auth, db } = initializeFirebase();
 
     try {
+      // 1. Create the user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // 2. Prepare the profile data
       const profileData = {
-        fullName,
-        email,
+        fullName: fullName.trim(),
+        email: email.toLowerCase().trim(),
         university,
         skills,
         interests,
         points: 100,
-        rating: 4.5,
+        rating: 5.0,
         isEducator: false,
         username: email.split('@')[0],
-        bio: `New explorer joining from ${university}. Ready to disrupt!`,
+        bio: `New collaborator joining from ${university}. Ready to build!`,
         graduationYear: "2026"
       };
 
+      // 3. Save to Firestore
       await setDoc(doc(db, 'users', user.uid), profileData);
 
-      // Save a local copy for components that might need immediate access
+      // 4. Update local cache for immediate UI responsiveness
       localStorage.setItem('cc_current_user', JSON.stringify(profileData));
 
       toast({
         title: "Genesis Complete!",
-        description: `Welcome to CampusConnect, ${fullName}!`,
+        description: `Welcome to CampusConnect, ${profileData.fullName}!`,
       });
       
-      // Delay slightly to ensure Firebase session is recognized
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 500);
+      // 5. Direct navigation to the dashboard
+      router.push('/dashboard');
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast({
         variant: "destructive",
         title: "Registration Failed",
-        description: error.message || "An error occurred during account creation.",
+        description: error.code === 'auth/email-already-in-use' 
+          ? "An account with this email already exists." 
+          : (error.message || "An error occurred during account creation."),
       });
       setIsSubmitting(false);
     }
@@ -378,7 +383,11 @@ export default function OnboardingFlow() {
             {step < 4 ? (
               <Button onClick={handleNext} className="ml-auto h-12 px-10 rounded-2xl font-bold bg-primary text-white shadow-lg shadow-primary/20">Continue</Button>
             ) : (
-              <Button onClick={onFinalSubmit} disabled={isSubmitting} className="ml-auto h-14 px-12 rounded-2xl font-bold bg-primary text-white shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all">
+              <Button 
+                onClick={onFinalSubmit} 
+                disabled={isSubmitting} 
+                className="ml-auto h-14 px-12 rounded-2xl font-bold bg-primary text-white shadow-xl shadow-primary/30 hover:-translate-y-1 transition-all"
+              >
                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Launch Dashboard'}
               </Button>
             )}
